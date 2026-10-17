@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Automation Platform for Fashion Brands — Demo</title>
+<style>
+/* =========================================================================
+   DESIGN SYSTEM  (brand-neutral, premium B2B SaaS)
+   All colors are CSS variables so a client's palette can be swapped in one place.
+   ========================================================================= */
+:root{
+  --ink:#1b1b1d;
+  --ink-2:#44454a;
+  --ink-3:#73757c;
+  --line:#e7e4df;
+  --line-2:#efece7;
+  --bg:#faf8f5;
+  --surface:#ffffff;
+  --surface-2:#f6f3ef;
+  --brand:#2b2b2e;          /* neutral charcoal — client brand color drops in here */
+  --brand-soft:#ecebe8;
+  --accent:#8a6d52;         /* warm neutral accent (taupe/bronze) */
+  --accent-soft:#f3ede6;
+  --ok:#2f7d5b; --ok-soft:#e5f1ea;
+  --warn:#b5832b; --warn-soft:#f8efdb;
+  --risk:#b4442f; --risk-soft:#f8e4df;
+  --info:#3a5f8a; --info-soft:#e6edf5;
+  --ai:#5b4b8a; --ai-soft:#ece8f5;
+  --radius:14px; --radius-sm:9px; --radius-lg:20px;
+  --shadow:0 1px 2px rgba(20,18,15,.05),0 8px 24px rgba(20,18,15,.06);
+  --shadow-lg:0 12px 48px rgba(20,18,15,.14);
+  --font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --serif:"Georgia","Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--font); color:var(--ink); background:var(--bg);
+  font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{margin:0;font-weight:600;letter-spacing:-.01em}
+button{font-family:inherit;cursor:pointer}
+a{color:inherit}
+::selection{background:var(--accent-soft)}
+/* scrollbars */
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-thumb{background:#d8d4ce;border-radius:20px;border:3px solid transparent;background-clip:content-box}
+*::-webkit-scrollbar-thumb:hover{background:#c3beb6;background-clip:content-box}
+
+/* ---------- App shell ---------- */
+.app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+.sidebar{
+  background:var(--surface);border-right:1px solid var(--line);
+  position:sticky;top:0;height:100vh;display:flex;flex-direction:column;
+}
+.brand{display:flex;align-items:center;gap:11px;padding:20px 20px 16px}
+.brand-mark{
+  width:38px;height:38px;border-radius:10px;background:var(--brand);color:#fff;
+  display:grid;place-items:center;font-weight:700;font-size:15px;letter-spacing:.5px;flex:none;
+}
+.brand-name{font-weight:700;font-size:15px;line-height:1.1}
+.brand-sub{font-size:11px;color:var(--ink-3);letter-spacing:.02em}
+.nav{padding:8px 12px;overflow-y:auto;flex:1}
+.nav-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink-3);
+  padding:14px 10px 6px;font-weight:600}
+.nav-item{
+  display:flex;align-items:center;gap:11px;width:100%;border:0;background:transparent;
+  padding:9px 10px;border-radius:9px;color:var(--ink-2);font-size:13.5px;font-weight:500;
+  text-align:left;margin-bottom:1px;transition:background .12s,color .12s;
+}
+.nav-item:hover{background:var(--surface-2);color:var(--ink)}
+.nav-item.active{background:var(--brand-soft);color:var(--ink);font-weight:600}
+.nav-item svg{width:17px;height:17px;flex:none;opacity:.85}
+.nav-item .count{margin-left:auto;background:var(--brand);color:#fff;font-size:10.5px;
+  font-weight:600;border-radius:20px;padding:1px 7px;min-width:18px;text-align:center}
+.nav-item .count.alert{background:var(--risk)}
+.sidebar-foot{padding:12px 14px;border-top:1px solid var(--line)}
+
+/* ---------- Topbar ---------- */
+.main{display:flex;flex-direction:column;min-height:100vh}
+.topbar{
+  position:sticky;top:0;z-index:30;background:rgba(250,248,245,.86);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);padding:12px 26px;display:flex;align-items:center;gap:16px;
+}
+.search{flex:1;max-width:420px;position:relative}
+.search input{
+  width:100%;border:1px solid var(--line);background:var(--surface);border-radius:10px;
+  padding:9px 12px 9px 34px;font-size:13px;color:var(--ink);outline:none;transition:border .12s,box-shadow .12s;
+}
+.search input:focus{border-color:#c9c3ba;box-shadow:0 0 0 3px var(--brand-soft)}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--ink-3)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.env-badge{
+  display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--warn);
+  background:var(--warn-soft);border:1px solid #ecd9ab;padding:5px 10px;border-radius:20px;
+}
+.env-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--warn);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.btn{
+  display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);
+  color:var(--ink);padding:8px 13px;border-radius:9px;font-size:13px;font-weight:600;transition:all .12s;
+}
+.btn:hover{border-color:#cfc9c0;background:var(--surface-2)}
+.btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn.primary:hover{background:#000;filter:none}
+.btn.sm{padding:6px 10px;font-size:12px}
+.btn svg{width:15px;height:15px}
+.btn.accent{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.accent:hover{filter:brightness(.94)}
+
+/* ---------- Content ---------- */
+.content{padding:26px;max-width:1280px;width:100%;margin:0 auto;flex:1}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap}
+.page-title{font-size:23px;font-weight:700}
+.page-sub{color:var(--ink-3);font-size:13px;margin-top:3px}
+.view{display:none}
+.view.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* cards / grid */
+.grid{display:grid;gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-pad{padding:18px}
+.card-head{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid var(--line-2)}
+.card-head h3{font-size:14px}
+.muted{color:var(--ink-3)}
+.tiny{font-size:11.5px}
+
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 17px;box-shadow:var(--shadow)}
+.kpi .k-top{display:flex;align-items:center;justify-content:space-between}
+.kpi .k-ico{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:var(--surface-2)}
+.kpi .k-ico svg{width:17px;height:17px;color:var(--ink-2)}
+.kpi .k-val{font-size:26px;font-weight:700;margin-top:11px;letter-spacing:-.02em}
+.kpi .k-lbl{font-size:12.5px;color:var(--ink-3);margin-top:1px}
+.kpi .k-delta{font-size:11.5px;font-weight:600;margin-top:8px;display:inline-flex;align-items:center;gap:4px}
+.k-delta.up{color:var(--ok)} .k-delta.down{color:var(--risk)}
+
+/* badges / pills */
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.pill .d{width:6px;height:6px;border-radius:50%}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.ok .d{background:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.warn .d{background:var(--warn)}
+.pill.risk{background:var(--risk-soft);color:var(--risk)} .pill.risk .d{background:var(--risk)}
+.pill.info{background:var(--info-soft);color:var(--info)} .pill.info .d{background:var(--info)}
+.pill.ai{background:var(--ai-soft);color:var(--ai)} .pill.ai .d{background:var(--ai)}
+.pill.neutral{background:var(--surface-2);color:var(--ink-2)} .pill.neutral .d{background:var(--ink-3)}
+.sim-tag{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:var(--info);
+  background:var(--info-soft);border:1px solid #cedcec;border-radius:6px;padding:2px 7px}
+.sim-tag svg{width:11px;height:11px}
+.live-tag{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:var(--ok);
+  background:var(--ok-soft);border:1px solid #bfe0cd;border-radius:6px;padding:2px 7px}
+
+/* tables */
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);
+  font-weight:600;padding:11px 16px;border-bottom:1px solid var(--line-2)}
+td{padding:13px 16px;border-bottom:1px solid var(--line-2);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tbody tr{cursor:pointer;transition:background .1s}
+tbody tr:hover{background:var(--surface-2)}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--accent-soft);color:var(--accent);
+  display:grid;place-items:center;font-weight:700;font-size:12px;flex:none}
+
+/* progress / timeline */
+.bar{height:7px;border-radius:20px;background:var(--line-2);overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:20px;background:var(--accent)}
+.timeline{list-style:none;margin:0;padding:0}
+.timeline li{position:relative;padding:0 0 18px 26px}
+.timeline li:before{content:"";position:absolute;left:6px;top:3px;width:11px;height:11px;border-radius:50%;
+  background:var(--surface);border:2px solid var(--line)}
+.timeline li:after{content:"";position:absolute;left:11px;top:14px;bottom:0;width:2px;background:var(--line-2)}
+.timeline li:last-child:after{display:none}
+.timeline li.done:before{background:var(--ok);border-color:var(--ok)}
+.timeline li.active:before{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.timeline li.pending{opacity:.55}
+.tl-title{font-weight:600;font-size:13px}
+.tl-meta{font-size:11.5px;color:var(--ink-3)}
+
+/* product tiles */
+.prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.prod{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);transition:transform .14s,box-shadow .14s}
+.prod:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.prod .img{aspect-ratio:3/4;position:relative}
+.prod .img svg{width:100%;height:100%;display:block}
+.prod .meta{padding:12px 13px}
+.prod .pname{font-weight:600;font-size:13.5px}
+.prod .pcat{font-size:11.5px;color:var(--ink-3);margin-top:1px}
+.prod .pprice{font-weight:700;font-size:13.5px;margin-top:7px}
+
+/* chat / inbox */
+.inbox{display:grid;grid-template-columns:320px 1fr 300px;height:calc(100vh - 150px);min-height:560px;
+  border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--surface);box-shadow:var(--shadow)}
+.conv-list{border-right:1px solid var(--line-2);overflow-y:auto}
+.conv-search{padding:12px;border-bottom:1px solid var(--line-2)}
+.conv-search input{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 11px;font-size:12.5px;outline:none}
+.conv{padding:13px 15px;border-bottom:1px solid var(--line-2);cursor:pointer;display:flex;gap:11px;transition:background .1s}
+.conv:hover{background:var(--surface-2)}
+.conv.active{background:var(--brand-soft)}
+.conv .c-main{flex:1;min-width:0}
+.conv .c-top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.conv .c-name{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conv .c-time{font-size:10.5px;color:var(--ink-3);flex:none}
+.conv .c-prev{font-size:12px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.conv .c-foot{display:flex;gap:6px;margin-top:7px;align-items:center}
+.chan-ico{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;flex:none;color:#fff}
+.chan-ico svg{width:14px;height:14px}
+.chan-wa{background:#1fab54}
+.chan-web{background:var(--info)}
+.chan-ig{background:linear-gradient(45deg,#f09433,#dc2743,#bc1888)}
+.chat{display:flex;flex-direction:column;min-width:0}
+.chat-head{padding:13px 18px;border-bottom:1px solid var(--line-2);display:flex;align-items:center;gap:11px}
+.chat-body{flex:1;overflow-y:auto;padding:18px;background:var(--surface-2);display:flex;flex-direction:column;gap:12px}
+.msg{max-width:74%;padding:10px 13px;border-radius:14px;font-size:13px;line-height:1.5;position:relative}
+.msg .m-time{font-size:10px;color:var(--ink-3);margin-top:5px}
+.msg.in{align-self:flex-start;background:var(--surface);border:1px solid var(--line-2);border-bottom-left-radius:4px}
+.msg.out{align-self:flex-end;background:var(--brand);color:#fff;border-bottom-right-radius:4px}
+.msg.out .m-time{color:rgba(255,255,255,.65)}
+.msg.ai-suggest{align-self:flex-end;background:var(--ai-soft);border:1px dashed #c3b9e0;color:var(--ink);max-width:82%}
+.msg.note{align-self:center;background:var(--warn-soft);color:var(--warn);font-size:11.5px;font-weight:600;padding:5px 12px;border-radius:20px}
+.chat-foot{border-top:1px solid var(--line-2);padding:12px 14px;background:var(--surface)}
+.ai-draft{background:var(--ai-soft);border:1px solid #d6cdee;border-radius:11px;padding:11px 13px;margin-bottom:10px}
+.ai-draft .adt{font-size:11px;font-weight:700;color:var(--ai);display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.compose{display:flex;gap:9px;align-items:flex-end}
+.compose textarea{flex:1;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-family:inherit;font-size:13px;resize:none;outline:none;min-height:42px;max-height:120px}
+.ctx{border-left:1px solid var(--line-2);overflow-y:auto;padding:16px}
+.ctx h4{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);margin:18px 0 9px}
+.ctx h4:first-child{margin-top:0}
+.ctx .row{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:4px 0}
+.ctx .row .l{color:var(--ink-3)}
+.typing{display:inline-flex;gap:3px;align-items:center}
+.typing i{width:5px;height:5px;border-radius:50%;background:var(--ai);animation:blink 1.2s infinite}
+.typing i:nth-child(2){animation-delay:.2s} .typing i:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,60%,100%{opacity:.25}30%{opacity:1}}
+
+/* calls */
+.call-row{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--line-2);cursor:pointer}
+.call-row:hover{background:var(--surface-2)}
+.call-ico{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;flex:none}
+.call-ico svg{width:16px;height:16px}
+.call-missed{background:var(--risk-soft);color:var(--risk)}
+.call-done{background:var(--ok-soft);color:var(--ok)}
+.call-after{background:var(--warn-soft);color:var(--warn)}
+
+/* workflow */
+.wf{display:flex;align-items:center;gap:15px;padding:16px 18px;border-bottom:1px solid var(--line-2)}
+.wf:last-child{border-bottom:0}
+.wf .wf-ico{width:38px;height:38px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:none}
+.wf .wf-ico svg{width:19px;height:19px}
+.wf .wf-main{flex:1}
+.wf .wf-name{font-weight:600;font-size:13.5px}
+.wf .wf-desc{font-size:12px;color:var(--ink-3);margin-top:2px}
+.wf .wf-flow{font-size:11.5px;color:var(--ink-2);margin-top:6px}
+.wf .wf-flow b{color:var(--ink)}
+.toggle{width:42px;height:24px;border-radius:20px;background:var(--line);position:relative;border:0;transition:background .15s;flex:none}
+.toggle:after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .15s}
+.toggle.on{background:var(--ok)} .toggle.on:after{left:20px}
+
+/* charts */
+.chart-wrap{padding:10px 6px 4px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-2);margin-top:6px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:3px}
+
+/* scenario launcher */
+.drawer-overlay{position:fixed;inset:0;background:rgba(25,22,18,.42);backdrop-filter:blur(2px);z-index:90;opacity:0;pointer-events:none;transition:opacity .2s}
+.drawer-overlay.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;height:100vh;width:440px;max-width:94vw;background:var(--surface);
+  box-shadow:var(--shadow-lg);z-index:91;transform:translateX(100%);transition:transform .26s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+.drawer.open{transform:none}
+.drawer-head{padding:20px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.drawer-body{overflow-y:auto;padding:18px 22px;flex:1}
+.scn{border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:12px;transition:border .12s,box-shadow .12s}
+.scn:hover{border-color:#cfc9c0;box-shadow:var(--shadow)}
+.scn .scn-top{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.scn .scn-num{width:24px;height:24px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700;flex:none}
+.scn .scn-title{font-weight:600;font-size:13.5px}
+.scn .scn-desc{font-size:12.5px;color:var(--ink-2);line-height:1.5}
+.scn .scn-biz{font-size:11.5px;color:var(--ink-3);margin:8px 0 11px;padding-left:11px;border-left:2px solid var(--accent-soft)}
+.iconbtn{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--ink-2)}
+.iconbtn:hover{background:var(--surface-2)}
+.iconbtn svg{width:16px;height:16px}
+
+/* order detail drawer reuse */
+.od-section{margin-bottom:22px}
+.od-section h4{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);margin-bottom:11px}
+.meas-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px 18px}
+.meas-grid .m{display:flex;justify-content:space-between;font-size:12.5px;padding:6px 0;border-bottom:1px solid var(--line-2)}
+.meas-grid .m .l{color:var(--ink-3)}
+
+/* settings */
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line-2)}
+.set-row:last-child{border:0}
+.set-row .l{font-size:13.5px;font-weight:500}
+.set-row .d{font-size:12px;color:var(--ink-3);margin-top:2px}
+.swatch{width:26px;height:26px;border-radius:7px;border:1px solid rgba(0,0,0,.08)}
+input[type=text].field,select.field{border:1px solid var(--line);border-radius:8px;padding:8px 11px;font-size:13px;font-family:inherit;outline:none;background:var(--surface)}
+input[type=text].field:focus{border-color:#c9c3ba;box-shadow:0 0 0 3px var(--brand-soft)}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;
+  padding:11px 18px;border-radius:11px;font-size:13px;font-weight:500;box-shadow:var(--shadow-lg);z-index:120;opacity:0;
+  transition:opacity .2s,transform .2s;display:flex;align-items:center;gap:9px;max-width:92vw}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast svg{width:16px;height:16px;flex:none}
+.hl{animation:hl 1.6s ease}
+@keyframes hl{0%,100%{box-shadow:var(--shadow)}30%{box-shadow:0 0 0 3px var(--accent)}}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:20px;padding:6px 13px;font-size:12.5px;font-weight:500;transition:all .12s}
+.chip:hover{border-color:#cfc9c0}
+.chip.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+
+@media(max-width:1100px){
+  .inbox{grid-template-columns:280px 1fr}.ctx{display:none}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:860px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:0;z-index:100;transform:translateX(-100%);transition:transform .22s;width:248px}
+  .sidebar.open{transform:none}
+  .menu-btn{display:grid!important}
+  .inbox{grid-template-columns:1fr}.conv-list{display:block}
+  .inbox.show-chat .conv-list{display:none}
+}
+.menu-btn{display:none;width:36px;height:36px;border-radius:8px;border:1px solid var(--line);background:var(--surface);place-items:center}
+.menu-btn svg{width:18px;height:18px}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark" id="brandMark">AB</div>
+      <div>
+        <div class="brand-name" id="brandName">Your Brand</div>
+        <div class="brand-sub">AI Automation Suite</div>
+      </div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="sidebar-foot">
+      <div class="sim-tag" style="width:100%;justify-content:center">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Demo environment · sample data
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <header class="topbar">
+      <button class="menu-btn" id="menuBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>
+        <input id="globalSearch" placeholder="Search orders, customers, conversations…" />
+      </div>
+      <div class="topbar-right">
+        <span class="env-badge"><span class="dot"></span>DEMO DATA</span>
+        <button class="btn accent" id="scnBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 3 14 9-14 9V3z"/></svg>
+          Demo Scenarios
+        </button>
+      </div>
+    </header>
+
+    <div class="content" id="content"><!-- views injected --></div>
+  </div>
+</div>
+
+<!-- ============ SCENARIO DRAWER ============ -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div>
+      <h2 style="font-size:17px">Demo Scenarios</h2>
+      <div class="muted tiny" style="margin-top:3px">Click “Play” to walk the client through a live example.</div>
+    </div>
+    <button class="iconbtn" id="drawerClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+  <div class="drawer-body" id="scnList"></div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================================
+   CONFIG  — everything brand-specific lives here and is swappable.
+   Replace brand, channels, policies, and catalog with a client's real data.
+   ========================================================================= */
+const CONFIG = {
+  brand:{
+    name:"Your Brand",
+    initials:"YB",
+    tagline:"AI Automation Suite",
+    color:"#2b2b2e",      // primary brand color  (var --brand)
+    accent:"#8a6d52",     // accent color         (var --accent)
+    currency:"$"
+  },
+  channels:{ whatsapp:true, webchat:true, voice:true, instagram:true },
+  policies:{
+    standardLeadWeeks:"8–10",
+    rushAvailable:true,
+    rushSurcharge:"35%",
+    businessHours:"Mon–Fri · 9:00am–6:00pm",
+    timezone:"local time"
+  }
+};
+
+const money = n => CONFIG.brand.currency + Number(n).toLocaleString();
+
+/* ---------- Inline SVG "editorial" garment imagery (always renders offline) ---------- */
+function garmentSVG(type, seed){
+  const palettes=[["#efe7dd","#d9c7b2","#8a6d52"],["#e7e3ec","#c9c0d8","#6a5e86"],
+    ["#e4ece6","#c2d4c7","#4f7a63"],["#f0e5e3","#d8bcb7","#a65b4e"],
+    ["#e9e9ec","#c9cad2","#5f6475"],["#f1ebdc","#ddcf9f","#9a7b2e"]];
+  const p=palettes[seed%palettes.length];
+  const bg=`<defs><linearGradient id="g${seed}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="${p[0]}"/><stop offset="1" stop-color="${p[1]}"/></linearGradient></defs>
+      <rect width="300" height="400" fill="url(#g${seed})"/>
+      <circle cx="245" cy="60" r="70" fill="#ffffff" opacity=".12"/>`;
+  const c=p[2];
+  let g="";
+  switch(type){
+    case "gown": g=`<path d="M150 70 L130 95 L120 130 Q100 300 95 350 L205 350 Q200 300 180 130 L170 95 Z" fill="${c}" opacity=".9"/>
+      <path d="M130 95 L120 130 L150 150 L180 130 L170 95 Z" fill="#fff" opacity=".18"/>`;break;
+    case "sherwani": g=`<path d="M150 72 L124 92 L116 150 L120 330 L150 330 L150 150 Z" fill="${c}"/>
+      <path d="M150 72 L176 92 L184 150 L180 330 L150 330 L150 150 Z" fill="${c}" opacity=".82"/>
+      <line x1="150" y1="92" x2="150" y2="330" stroke="#fff" stroke-width="2" opacity=".4"/>
+      <circle cx="150" cy="140" r="3" fill="#fff" opacity=".6"/><circle cx="150" cy="170" r="3" fill="#fff" opacity=".6"/><circle cx="150" cy="200" r="3" fill="#fff" opacity=".6"/>`;break;
+    case "lehenga": g=`<path d="M150 72 L130 92 L140 150 L160 150 L170 92 Z" fill="${c}"/>
+      <path d="M135 160 Q90 300 80 345 L220 345 Q210 300 165 160 Z" fill="${c}" opacity=".9"/>
+      <path d="M110 250 L190 250 M100 300 L200 300" stroke="#fff" stroke-width="2" opacity=".3"/>`;break;
+    case "suit": g=`<path d="M150 74 L122 90 L112 150 L124 320 L176 320 L188 150 L178 90 Z" fill="${c}"/>
+      <path d="M150 90 L134 150 L150 180 L166 150 Z" fill="#fff" opacity=".85"/>
+      <path d="M150 180 L150 320" stroke="#fff" stroke-width="2" opacity=".25"/>`;break;
+    case "saree": g=`<path d="M150 72 L128 92 L132 160 L120 330 L150 330 L160 160 Z" fill="${c}"/>
+      <path d="M150 72 L176 100 Q200 180 185 330 L150 330 Z" fill="${c}" opacity=".78"/>
+      <path d="M160 120 Q190 200 180 320" stroke="#fff" stroke-width="3" opacity=".35" fill="none"/>`;break;
+    default: g=`<path d="M150 72 L124 92 L116 150 L122 300 L178 300 L184 150 L176 92 Z" fill="${c}"/>
+      <rect x="130" y="150" width="40" height="110" fill="#fff" opacity=".12"/>`;
+  }
+  return `data:image/svg+xml;utf8,`+encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400">${bg}${g}</svg>`);
+}
+
+/* =========================================================================
+   DEMO DATA  (clearly sample — never represents real inventory/sales)
+   ========================================================================= */
+const PRODUCTS=[
+  {id:"P-01",name:"Silk Evening Gown",cat:"Eveningwear",occasion:"Evening / Gala",fabric:"Pure Silk",price:620,sizes:"XS–XL / Custom",type:"gown",seed:0,tags:["silk","evening","formal","gown"]},
+  {id:"P-02",name:"Embroidered Sherwani",cat:"Menswear",occasion:"Wedding",fabric:"Raw Silk · Zardozi",price:540,sizes:"38–46 / Custom",type:"sherwani",seed:1,tags:["sherwani","wedding","men","embroidered"]},
+  {id:"P-03",name:"Bridal Lehenga",cat:"Bridal",occasion:"Wedding",fabric:"Velvet · Hand-embroidery",price:980,sizes:"Custom only",type:"lehenga",seed:3,tags:["bridal","lehenga","wedding","velvet"]},
+  {id:"P-04",name:"Tailored Blazer",cat:"Formalwear",occasion:"Business / Formal",fabric:"Italian Wool",price:340,sizes:"34–48 / Custom",type:"suit",seed:4,tags:["blazer","formal","men","wool","suit"]},
+  {id:"P-05",name:"Draped Saree Gown",cat:"Eveningwear",occasion:"Reception",fabric:"Georgette",price:450,sizes:"XS–XXL / Custom",type:"saree",seed:2,tags:["saree","gown","reception","georgette"]},
+  {id:"P-06",name:"Cocktail Dress",cat:"Eveningwear",occasion:"Party",fabric:"Crepe",price:290,sizes:"XS–L",type:"gown",seed:5,tags:["cocktail","party","dress","crepe"]},
+  {id:"P-07",name:"Ivory Wedding Suit",cat:"Menswear",occasion:"Wedding",fabric:"Linen Blend",price:410,sizes:"36–46 / Custom",type:"suit",seed:0,tags:["suit","wedding","men","ivory","linen"]},
+  {id:"P-08",name:"Festive Anarkali",cat:"Festivewear",occasion:"Festive",fabric:"Chiffon · Sequin",price:360,sizes:"XS–XL / Custom",type:"lehenga",seed:1,tags:["anarkali","festive","chiffon","women"]}
+];
+
+const PROD_STAGES=["Order placed","Measurements confirmed","Fabric sourcing","Cutting","Stitching","Hand-finishing","Quality check","Shipped","Delivered"];
+
+const ORDERS=[
+  {id:"#4821",customer:"Aisha Rahman",location:"London, UK",product:"Bridal Lehenga",value:980,stage:4,due:"2026-11-28",placed:"2026-09-30",risk:"ok",rush:false,
+    measurements:{Bust:"34\"",Waist:"28\"",Hips:"38\"",Height:"5'5\"","Blouse length":"15\"","Sleeve":"18\""}},
+  {id:"#4820",customer:"Daniel Okafor",location:"Toronto, CA",product:"Embroidered Sherwani",value:540,stage:6,due:"2026-10-24",placed:"2026-09-12",risk:"warn",rush:false,
+    measurements:{Chest:"42\"",Shoulder:"18\"",Waist:"36\"","Sleeve":"25\"","Length":"44\"",Height:"6'0\""}},
+  {id:"#4819",customer:"Priya Sharma",location:"Dubai, AE",product:"Silk Evening Gown",value:620,stage:2,due:"2026-11-10",placed:"2026-10-05",risk:"risk",rush:false,
+    measurements:{Bust:"36\"",Waist:"30\"",Hips:"40\"",Height:"5'7\""}, delay:"Fabric supplier shipment delayed 6 days"},
+  {id:"#4818",customer:"James Miller",location:"Manchester, UK",product:"Tailored Blazer",value:340,stage:7,due:"2026-10-20",placed:"2026-09-25",risk:"ok",rush:false,
+    measurements:{Chest:"40\"",Shoulder:"17.5\"",Waist:"34\"","Sleeve":"24\""}},
+  {id:"#4817",customer:"Fatima Noor",location:"New York, US",product:"Festive Anarkali",value:360,stage:3,due:"2026-11-02",placed:"2026-10-08",risk:"ok",rush:true,
+    measurements:{Bust:"35\"",Waist:"29\"",Hips:"39\"",Height:"5'4\"","Length":"52\""}},
+  {id:"#4816",customer:"Omar Yusuf",location:"Sydney, AU",product:"Ivory Wedding Suit",value:410,stage:8,due:"2026-10-16",placed:"2026-09-01",risk:"ok",rush:false,
+    measurements:{Chest:"41\"",Shoulder:"18\"",Waist:"35\"","Inseam":"32\""}},
+  {id:"#4815",customer:"Sofia Rossi",location:"Milan, IT",product:"Draped Saree Gown",value:450,stage:1,due:"2026-11-18",placed:"2026-10-12",risk:"ok",rush:false,
+    measurements:{Bust:"34\"",Waist:"27\"",Hips:"37\"",Height:"5'6\""}}
+];
+
+const CONVERSATIONS=[
+  {id:"c1",name:"Priya Sharma",channel:"whatsapp",time:"2m",status:"needs-human",order:"#4819",
+    preview:"Any update on my gown? The event is…",
+    summary:"Customer asking for production update on delayed order #4819. Fabric delay flagged — needs a human to confirm revised date.",
+    customer:{phone:"+971 50 •••• 882",location:"Dubai, AE",tier:"Returning",orders:3,ltv:1840},
+    messages:[
+      {s:"in",t:"Hi, any update on my gown? The event is on Nov 15 and I'm getting nervous 😟",time:"10:02"},
+      {s:"out",t:"Hi Priya! Let me check order #4819 for you right away.",time:"10:02",ai:true},
+      {s:"in",t:"Thank you, I just want to make sure it'll arrive in time.",time:"10:03"}
+    ],
+    aiDraft:"Hi Priya — I've checked order #4819 (Silk Evening Gown). It's currently in fabric sourcing. There was a 6-day supplier delay, so the revised ship date is Nov 6, arriving well before your Nov 15 event. I've flagged this to our production lead to confirm. Would you like me to prioritise this order?"},
+  {id:"c2",name:"Marcus Lee",channel:"webchat",time:"8m",status:"ai-handled",order:null,
+    preview:"Do you have anything for a black-tie gala?",
+    summary:"New visitor browsing eveningwear for a black-tie event. AI recommended 2 products and offered a styling consult.",
+    customer:{phone:"web visitor",location:"Singapore",tier:"New",orders:0,ltv:0},
+    messages:[
+      {s:"in",t:"Hi, do you have anything for a black-tie gala next month?",time:"09:54"},
+      {s:"out",t:"Absolutely! For black-tie, our Silk Evening Gown and Draped Saree Gown are both popular. May I ask your size and budget so I can narrow it down?",time:"09:54",ai:true},
+      {s:"in",t:"Size M, budget around $500.",time:"09:55"},
+      {s:"out",t:"Perfect — the Draped Saree Gown ($450, Georgette) fits beautifully within budget and is ideal for galas. Would you like to see it or book a styling consultation?",time:"09:55",ai:true}
+    ],
+    aiDraft:"I can hold a styling consultation slot for you this week — would Thursday 4:00pm or Friday 11:00am work better?"},
+  {id:"c3",name:"Daniel Okafor",channel:"whatsapp",time:"32m",status:"ai-handled",order:"#4820",
+    preview:"Where is my order right now?",
+    summary:"Returning customer requested order status. AI provided live production stage and expected delivery automatically.",
+    customer:{phone:"+1 416 •••• 204",location:"Toronto, CA",tier:"VIP",orders:5,ltv:3120},
+    messages:[
+      {s:"in",t:"Hey, where is my order right now?",time:"09:28"},
+      {s:"out",t:"Hi Daniel! Order #4820 (Embroidered Sherwani) is in hand-finishing — stage 6 of 8. Expected delivery: Oct 24. You're on track! 🎉",time:"09:28",ai:true},
+      {s:"in",t:"Amazing, thank you!",time:"09:29"},
+      {s:"out",t:"You're welcome! I'll send you a tracking link automatically once it ships.",time:"09:29",ai:true}
+    ],aiDraft:null},
+  {id:"c4",name:"Fatima Noor",channel:"instagram",time:"1h",status:"escalated",order:"#4817",
+    preview:"I need this 10 days earlier, is that possible?",
+    summary:"Rush-delivery request on order #4817. AI collected details & checked feasibility, then escalated to production for a firm quote.",
+    customer:{phone:"@fatima.n",location:"New York, US",tier:"Returning",orders:2,ltv:720},
+    messages:[
+      {s:"in",t:"I love my Anarkali order but I now need it 10 days earlier — is that possible??",time:"08:40"},
+      {s:"out",t:"Let me check that for you! Our standard timeline is 8–10 weeks. Rush orders are sometimes possible with a 35% surcharge. Could you confirm the exact date you need it by?",time:"08:40",ai:true},
+      {s:"in",t:"I need it by Oct 23.",time:"08:41"},
+      {s:"out",t:"Got it. Oct 23 is tighter than standard, so I'm checking feasibility with our production team and will come back with a firm quote. I've logged all the details.",time:"08:41",ai:true},
+      {s:"note",t:"Escalated to Production — rush feasibility check",time:"08:42"}
+    ],aiDraft:null},
+  {id:"c5",name:"Sofia Rossi",channel:"webchat",time:"3h",status:"ai-handled",order:"#4815",
+    preview:"Can I add a matching clutch?",
+    summary:"Upsell request on order #4815. AI confirmed add-on availability and updated the order notes.",
+    customer:{phone:"web visitor",location:"Milan, IT",tier:"New",orders:1,ltv:450},
+    messages:[
+      {s:"in",t:"Can I add a matching clutch to my order #4815?",time:"07:12"},
+      {s:"out",t:"Great choice! Yes, a matching georgette clutch can be added for $45. Shall I add it to order #4815?",time:"07:12",ai:true},
+      {s:"in",t:"Yes please!",time:"07:13"},
+      {s:"out",t:"Done — added to #4815. Your updated total is $495. 💫",time:"07:13",ai:true}
+    ],aiDraft:null}
+];
+
+const CALLS=[
+  {id:"v1",name:"Unknown caller",number:"+44 7•• ••• 331",type:"after",afterHours:true,time:"Today · 8:12pm",dur:"1:48",
+    lead:{name:"Hannah (captured)",intent:"Wedding guest dress enquiry",budget:"~$400",contact:"+44 7•• ••• 331"},
+    summary:"After-hours call captured by AI receptionist. Caller asked about a wedding-guest dress for late November. Lead details captured, follow-up task created for the sales team at 9:00am.",
+    transcript:[
+      {s:"ai",t:"Thanks for calling Your Brand. Our team is away until 9am, but I can help right now — what are you looking for?"},
+      {s:"cust",t:"Hi, I need a dress for a wedding at the end of November. Do you do custom?"},
+      {s:"ai",t:"We do — custom orders take 8–10 weeks typically, and late-November is feasible. May I take your name and number so a stylist can call you first thing tomorrow?"},
+      {s:"cust",t:"Sure, it's Hannah, this number is fine. Budget's around £350–400."},
+      {s:"ai",t:"Perfect, Hannah. I've booked a callback for 9:00am and noted your budget. Talk soon!"}
+    ],followup:"Stylist callback — Hannah — 9:00am"},
+  {id:"v2",name:"Priya Sharma",number:"+971 50 •••• 882",type:"done",afterHours:false,time:"Today · 10:05am",dur:"3:21",
+    lead:null,
+    summary:"Existing customer called about delayed order #4819. AI confirmed order status, reassured on timeline, and flagged for a human callback to confirm the revised date.",
+    transcript:[
+      {s:"cust",t:"Hi, I'm worried about my gown order."},
+      {s:"ai",t:"Of course — that's order #4819, the Silk Evening Gown. It's in fabric sourcing with a revised ship date of Nov 6. I've flagged a callback from our production lead to confirm."},
+      {s:"cust",t:"Okay, thank you, that's reassuring."}
+    ],followup:"Production lead callback — confirm #4819 date"},
+  {id:"v3",name:"Missed — Pakistan line",number:"+92 3•• ••• 019",type:"missed",afterHours:false,time:"Today · 1:02pm",dur:"—",
+    lead:{name:"Unknown",intent:"Unknown — missed",budget:"—",contact:"+92 3•• ••• 019"},
+    summary:"Missed call on the local line during a busy period. AI auto-sent a WhatsApp recovery message within 30 seconds; customer replied and was routed to the inbox.",
+    transcript:[{s:"note",t:"Call missed. AI sent WhatsApp: “Hi! Sorry we missed your call — how can we help? Reply here and our team will assist.” Customer replied 2 min later."}],
+    followup:"Recovered via WhatsApp → routed to inbox"},
+  {id:"v4",name:"Omar Yusuf",number:"+61 4•• ••• 770",type:"done",afterHours:false,time:"Yesterday · 4:40pm",dur:"2:02",
+    lead:null,summary:"VIP customer confirmed shipping address for order #4816. AI verified identity and updated the shipping record.",
+    transcript:[{s:"cust",t:"I want to update my delivery address for my suit."},{s:"ai",t:"Happy to help, Omar. I've verified order #4816. What's the new address?"}],followup:null},
+  {id:"v5",name:"Unknown caller",number:"+1 312 •••• 540",type:"after",afterHours:true,time:"Yesterday · 9:48pm",dur:"1:12",
+    lead:{name:"Carlos (captured)",intent:"Groom sherwani for Dec wedding",budget:"~$600",contact:"+1 312 •••• 540"},
+    summary:"After-hours lead captured. Groom shopping for a December wedding sherwani. Details captured, callback scheduled.",
+    transcript:[{s:"ai",t:"Thanks for calling — we're closed but I can take your details. What's the occasion?"},{s:"cust",t:"My wedding in December, I need a sherwani."},{s:"ai",t:"Congratulations! December is very doable. I'll have a stylist call you tomorrow — your name?"},{s:"cust",t:"Carlos."}],
+    followup:"Stylist callback — Carlos — wedding sherwani"}
+];
+
+let WORKFLOWS=[
+  {id:"w1",name:"Order status notifications",icon:"bell",on:true,
+    desc:"Keeps customers informed at every production milestone.",
+    flow:"When <b>order stage changes</b> → send <b>WhatsApp update</b> to customer with new stage + ETA",last:"Sent 42 updates this week"},
+  {id:"w2",name:"Delayed-order alert",icon:"alert",on:true,
+    desc:"Flags at-risk orders to the operations team before the customer notices.",
+    flow:"When <b>order is behind schedule</b> → alert <b>ops team</b> + draft a proactive customer message",last:"3 orders flagged today"},
+  {id:"w3",name:"Rush-order qualification",icon:"zap",on:true,
+    desc:"Checks feasibility and sets expectations before a promise is made.",
+    flow:"When <b>customer requests earlier delivery</b> → collect date + check against <b>8–10 wk</b> standard → quote surcharge or escalate",last:"2 rush requests qualified"},
+  {id:"w4",name:"Appointment scheduling",icon:"calendar",on:true,
+    desc:"Books styling consultations straight into the team calendar.",
+    flow:"When <b>customer wants a consultation</b> → offer <b>open slots</b> → book + sync to Google Calendar",last:"5 consults booked this week"},
+  {id:"w5",name:"Missed-call recovery",icon:"phone",on:true,
+    desc:"No lost business hours — every missed call gets an instant follow-up.",
+    flow:"When <b>call is missed</b> → send <b>WhatsApp recovery</b> within 30s → route reply to inbox",last:"Recovered 4 of 5 missed calls"},
+  {id:"w6",name:"Human escalation rules",icon:"user",on:true,
+    desc:"Hands off to a human the moment judgement is needed.",
+    flow:"When <b>sentiment is negative</b> OR <b>custom quote needed</b> → assign to <b>team member</b> + attach summary",last:"7 escalations routed today"},
+  {id:"w7",name:"Post-delivery follow-up",icon:"heart",on:false,
+    desc:"Requests a review and nurtures repeat business after delivery.",
+    flow:"When <b>order delivered + 3 days</b> → send <b>review request</b> + styling tips",last:"Paused"}
+];
+
+/* analytics (sample) */
+const ANALYTICS={
+  kpis:[
+    {label:"AI-handled inquiries",val:"87%",delta:"+6 pts",dir:"up",ico:"bot",note:"vs. last period"},
+    {label:"Human escalation rate",val:"13%",delta:"-4 pts",dir:"up",ico:"user",note:"lower is better"},
+    {label:"Avg. first response",val:"24 sec",delta:"-11 min",dir:"up",ico:"clock",note:"was ~11 min manual"},
+    {label:"Leads captured",val:"38",delta:"+12",dir:"up",ico:"capture",note:"this period"},
+    {label:"After-hours recovered",val:"19",delta:"+19",dir:"up",ico:"moon",note:"previously lost"},
+    {label:"Est. team time saved",val:"47 hrs",delta:"+9 hrs",dir:"up",ico:"save",note:"this period"},
+    {label:"Consultations booked",val:"23",delta:"+7",dir:"up",ico:"calendar",note:"auto-scheduled"},
+    {label:"Sales conversion (chat)",val:"18%",delta:"+3 pts",dir:"up",ico:"cart",note:"assisted by AI"}
+  ],
+  daily:[62,70,58,81,74,90,66,88,95,79,102,91,110,98],       // inquiries handled / day
+  resolved:[54,61,49,72,66,80,57,79,86,70,92,82,99,90],      // handled by AI (no human)
+  channelMix:[{l:"WhatsApp",v:52,c:"#1fab54"},{l:"Website chat",v:27,c:"#3a5f8a"},{l:"Instagram",v:14,c:"#bc1888"},{l:"Voice",v:7,c:"#8a6d52"}]
+};
+
+/* =========================================================================
+   NAVIGATION
+   ========================================================================= */
+const ICONS={
+  dashboard:'<path d="M3 3h8v8H3zM13 3h8v5h-8zM13 10h8v11h-8zM3 13h8v8H3z"/>',
+  inbox:'<path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7M3 7l9 6 9-6M3 7a2 2 0 012-2h14a2 2 0 012 2"/>',
+  orders:'<path d="M9 2h6l1 4H8zM4 6h16l-1.5 14a2 2 0 01-2 2H7.5a2 2 0 01-2-2z"/>',
+  shop:'<path d="M20 7h-3V6a5 5 0 00-10 0v1H4l-1 14h18zM9 7V6a3 3 0 016 0v1"/>',
+  voice:'<path d="M12 2a3 3 0 00-3 3v6a3 3 0 006 0V5a3 3 0 00-3-3zM5 10a7 7 0 0014 0M12 17v4"/>',
+  workflow:'<path d="M4 4h6v6H4zM14 14h6v6h-6zM10 7h4a3 3 0 013 3v4"/>',
+  analytics:'<path d="M3 3v18h18M7 14l3-3 3 3 5-6"/>',
+  settings:'<path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19 12a7 7 0 00-.1-1l2-1.6-2-3.4-2.4 1a7 7 0 00-1.7-1L14.5 3h-4l-.3 2.6a7 7 0 00-1.7 1l-2.4-1-2 3.4L4.1 11a7 7 0 000 2l-2 1.6 2 3.4 2.4-1a7 7 0 001.7 1l.3 2.6h4l.3-2.6a7 7 0 001.7-1l2.4 1 2-3.4-2-1.6a7 7 0 00.1-1z"/>'
+};
+const NAV=[
+  {sec:"Workspace"},
+  {id:"dashboard",label:"Overview",icon:"dashboard"},
+  {id:"inbox",label:"AI Customer Inbox",icon:"inbox",count:()=>CONVERSATIONS.filter(c=>c.status!=="ai-handled").length,alert:true},
+  {id:"orders",label:"Order Management",icon:"orders",count:()=>ORDERS.filter(o=>o.risk!=="ok").length,alert:true},
+  {sec:"AI Agents"},
+  {id:"shop",label:"AI Shopping Assistant",icon:"shop"},
+  {id:"voice",label:"AI Voice Receptionist",icon:"voice",count:()=>CALLS.filter(c=>c.type!=="done").length},
+  {sec:"Automation"},
+  {id:"workflow",label:"Workflow Automation",icon:"workflow"},
+  {id:"analytics",label:"Analytics",icon:"analytics"},
+  {sec:"Configuration"},
+  {id:"settings",label:"Brand Settings",icon:"settings"}
+];
+
+function renderNav(){
+  const nav=document.getElementById("nav");
+  nav.innerHTML=NAV.map(n=>{
+    if(n.sec) return `<div class="nav-label">${n.sec}</div>`;
+    const c=n.count?n.count():0;
+    const badge=c>0?`<span class="count ${n.alert?'alert':''}">${c}</span>`:"";
+    return `<button class="nav-item" data-view="${n.id}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[n.icon]}</svg>
+      ${n.label}${badge}</button>`;
+  }).join("");
+  nav.querySelectorAll(".nav-item").forEach(b=>b.onclick=()=>go(b.dataset.view));
+}
+
+let current="dashboard";
+function go(view){
+  current=view;
+  document.querySelectorAll(".nav-item").forEach(b=>b.classList.toggle("active",b.dataset.view===view));
+  document.getElementById("content").innerHTML=VIEWS[view]();
+  if(AFTER[view])AFTER[view]();
+  document.getElementById("sidebar").classList.remove("open");
+  window.scrollTo(0,0);
+}
+
+/* =========================================================================
+   VIEW RENDERERS
+   ========================================================================= */
+const VIEWS={};
+const AFTER={};
+
+/* ---- helpers ---- */
+const stageName=o=>PROD_STAGES[o.stage];
+const riskPill=r=>({ok:'<span class="pill ok"><span class="d"></span>On track</span>',
+  warn:'<span class="pill warn"><span class="d"></span>Tight</span>',
+  risk:'<span class="pill risk"><span class="d"></span>At risk</span>'})[r];
+const statusPill=s=>({"ai-handled":'<span class="pill ok"><span class="d"></span>AI handled</span>',
+  "needs-human":'<span class="pill warn"><span class="d"></span>Needs human</span>',
+  "escalated":'<span class="pill risk"><span class="d"></span>Escalated</span>'})[s];
+const chanIcon=c=>{
+  const m={whatsapp:['chan-wa','<path d="M12 2a10 10 0 00-8.5 15.2L2 22l4.9-1.5A10 10 0 1012 2z"/><path d="M8.5 8.5c.5 3 3 5.5 6 6l1.5-1.5-2-1-1 .8c-1.3-.6-2.4-1.7-3-3l.8-1-1-2z" fill="#fff" stroke="none"/>'],
+    webchat:['chan-web','<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>'],
+    instagram:['chan-ig','<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#fff" stroke="none"/>']};
+  const [cls,path]=m[c]||m.webchat;
+  return `<div class="chan-ico ${cls}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">${path}</svg></div>`;
+};
+const initials=n=>n.split(" ").filter(x=>x[0]&&/[A-Za-z]/.test(x[0])).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"?";
+
+/* ================= DASHBOARD ================= */
+VIEWS.dashboard=()=>{
+  const atRisk=ORDERS.filter(o=>o.risk!=="ok");
+  const pending=CONVERSATIONS.filter(c=>c.status!=="ai-handled");
+  return `
+  <div class="page-head">
+    <div><div class="page-title">Overview</div>
+      <div class="page-sub">Good morning — here's what your AI handled across every channel today.</div></div>
+    <button class="btn accent" onclick="openDrawer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 3 14 9-14 9V3z"/></svg> Run a scenario</button>
+  </div>
+
+  <div class="kpis" style="margin-bottom:16px">
+    ${kpiCard({ico:"bot",val:"87%",lbl:"Inquiries auto-resolved",delta:"+6 pts",dir:"up"})}
+    ${kpiCard({ico:"orders",val:ORDERS.length,lbl:"Active orders",delta:"2 new today",dir:"up"})}
+    ${kpiCard({ico:"alert",val:atRisk.length,lbl:"Orders at risk",delta:"needs attention",dir:"down"})}
+    ${kpiCard({ico:"capture",val:"19",lbl:"After-hours leads saved",delta:"+19",dir:"up"})}
+  </div>
+
+  <div class="grid" style="grid-template-columns:2fr 1fr">
+    <div class="card">
+      <div class="card-head"><h3>Recent AI activity</h3><span class="live-tag">AI agents · live</span></div>
+      <div style="padding:6px 0">${activityFeed()}</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Pending requests &amp; tasks</h3><span class="pill warn"><span class="d"></span>${pending.length+2} open</span></div>
+      <div style="padding:8px 14px">${taskList()}</div>
+    </div>
+  </div>
+
+  <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:16px">
+    <div class="card">
+      <div class="card-head"><h3>Orders at risk</h3><button class="btn sm" onclick="go('orders')">View all</button></div>
+      <div style="padding:4px 0">
+      ${atRisk.map(o=>`<div style="display:flex;align-items:center;gap:13px;padding:12px 16px;border-bottom:1px solid var(--line-2);cursor:pointer" onclick="go('orders');setTimeout(()=>openOrder('${o.id}'),120)">
+        <div class="avatar">${initials(o.customer)}</div>
+        <div style="flex:1"><div style="font-weight:600;font-size:13px">${o.id} · ${o.product}</div>
+          <div class="tiny muted">${o.customer} · ${o.delay||'Timeline tight — '+stageName(o)}</div></div>
+        ${riskPill(o.risk)}</div>`).join("")}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Customer support performance</h3><span class="sim-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>sample</span></div>
+      <div class="card-pad">
+        ${perfRow("First response time","24 sec","was ~11 min manually",92)}
+        ${perfRow("Resolution without human","87%","of all inquiries",87)}
+        ${perfRow("Customer satisfaction","4.8 / 5","from post-chat surveys",96)}
+        ${perfRow("Channels connected","4 / 4","WhatsApp · Web · IG · Voice",100)}
+      </div>
+    </div>
+  </div>`;
+};
+function kpiCard(k){
+  const dirCls=k.dir==="up"?"up":"down";
+  const arrow=k.dir==="up"?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17 17 7M9 7h8v8"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 7l10 10M17 9v8H9"/></svg>';
+  const lbl=k.lbl||k.label||"";
+  const sub=k.note?`<div class="tiny muted" style="margin-top:2px">${k.note}</div>`:"";
+  return `<div class="kpi"><div class="k-top"><div class="k-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">${ICO2[k.ico]||ICO2.bot}</svg></div></div>
+    <div class="k-val">${k.val}</div><div class="k-lbl">${lbl}</div>${sub}
+    <div class="k-delta ${dirCls}">${arrow}${k.delta}</div></div>`;
+}
+const ICO2={
+  bot:'<rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M8 14h.01M16 14h.01"/>',
+  orders:ICONS.orders,alert:'<path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/>',
+  capture:'<path d="M20 6 9 17l-5-5"/>',user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',moon:'<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>',
+  save:'<path d="M12 8v5l3 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>',calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/>',
+  cart:'<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 002 1.6h9.7a2 2 0 002-1.6L23 6H6"/>'
+};
+function perfRow(l,v,sub,pct){
+  return `<div style="margin-bottom:15px"><div style="display:flex;justify-content:space-between;align-items:baseline">
+    <span style="font-size:13px;font-weight:500">${l}</span><span style="font-weight:700;font-size:14px">${v}</span></div>
+    <div class="tiny muted" style="margin:3px 0 7px">${sub}</div>
+    <div class="bar"><i style="width:${pct}%"></i></div></div>`;
+}
+function activityFeed(){
+  const items=[
+    {ic:"bot",c:"ai",t:"AI answered an order-status question",d:"Daniel Okafor · #4820 · WhatsApp",time:"2m ago"},
+    {ic:"capture",c:"ok",t:"After-hours lead captured by voice AI",d:"Hannah · wedding-guest dress · £400",time:"12m ago"},
+    {ic:"alert",c:"risk",t:"Delay alert raised to operations",d:"#4819 · fabric supplier delay",time:"28m ago"},
+    {ic:"zap",c:"warn",t:"Rush-order request qualified &amp; escalated",d:"Fatima Noor · #4817 · needs Oct 23",time:"1h ago"},
+    {ic:"calendar",c:"info",t:"Styling consultation auto-booked",d:"Marcus Lee · Thu 4:00pm",time:"1h ago"},
+    {ic:"phone",c:"ok",t:"Missed call recovered via WhatsApp",d:"+92 line · routed to inbox",time:"3h ago"}
+  ];
+  const zap='<path d="M13 2 3 14h7l-1 8 10-12h-7z"/>',phone='<path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3 19.5 19.5 0 01-6-6 19.8 19.8 0 01-3-8.6A2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.3-1.2a2 2 0 012.1-.5c.9.3 1.8.6 2.8.7a2 2 0 011.7 2z"/>';
+  const ip={bot:ICO2.bot,capture:ICO2.capture,alert:ICO2.alert,zap:zap,calendar:ICO2.calendar,phone:phone};
+  return items.map(i=>`<div style="display:flex;gap:13px;padding:11px 18px;border-bottom:1px solid var(--line-2)">
+    <div style="width:30px;height:30px;border-radius:8px;flex:none;display:grid;place-items:center;background:var(--${i.c}-soft);color:var(--${i.c})">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15">${ip[i.ic]}</svg></div>
+    <div style="flex:1"><div style="font-size:13px;font-weight:500">${i.t}</div><div class="tiny muted" style="margin-top:1px">${i.d}</div></div>
+    <div class="tiny muted" style="flex:none">${i.time}</div></div>`).join("");
+}
+function taskList(){
+  const tasks=[
+    {t:"Confirm revised date for #4819",d:"Flagged by delay alert",p:"risk"},
+    {t:"Approve rush quote — Fatima (#4817)",d:"Needs Oct 23 · 35% surcharge",p:"warn"},
+    {t:"Call back Hannah — 9:00am",d:"After-hours lead",p:"info"},
+    {t:"Reply to Priya (needs human)",d:"WhatsApp · 2m ago",p:"warn"},
+    {t:"Call back Carlos — sherwani",d:"After-hours lead",p:"info"}
+  ];
+  return tasks.map(t=>`<div style="display:flex;gap:11px;align-items:flex-start;padding:10px 2px;border-bottom:1px solid var(--line-2)">
+    <span class="pill ${t.p}" style="margin-top:1px"><span class="d"></span></span>
+    <div style="flex:1"><div style="font-size:13px;font-weight:500;line-height:1.35">${t.t}</div><div class="tiny muted">${t.d}</div></div>
+    <button class="btn sm">Open</button></div>`).join("");
+}
+
+/* ================= INBOX ================= */
+let activeConv=CONVERSATIONS[0].id;
+VIEWS.inbox=()=>`
+  <div class="page-head"><div><div class="page-title">AI Customer Inbox</div>
+    <div class="page-sub">Every channel in one place. The AI drafts replies; your team approves or hands off.</div></div>
+    <div style="display:flex;gap:8px">
+      ${chanPill("whatsapp","WhatsApp")}${chanPill("webchat","Website")}${chanPill("instagram","Instagram")}
+    </div></div>
+  <div class="inbox" id="inbox">
+    <div class="conv-list" id="convList"></div>
+    <div class="chat" id="chatPane"></div>
+    <div class="ctx" id="ctxPane"></div>
+  </div>`;
+function chanPill(c,l){const on=CONFIG.channels[c==="webchat"?"webchat":c];
+  return `<span class="sim-tag" style="${on?'':'opacity:.4'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>${l} · simulated</span>`;}
+AFTER.inbox=()=>{renderConvList();openConv(activeConv);};
+function renderConvList(){
+  document.getElementById("convList").innerHTML=
+    `<div class="conv-search"><input placeholder="Search conversations…" oninput="filterConv(this.value)"></div>`+
+    CONVERSATIONS.map(c=>`<div class="conv ${c.id===activeConv?'active':''}" data-id="${c.id}" onclick="openConv('${c.id}')">
+      ${chanIcon(c.channel)}
+      <div class="c-main"><div class="c-top"><span class="c-name">${c.name}</span><span class="c-time">${c.time}</span></div>
+        <div class="c-prev">${c.preview}</div>
+        <div class="c-foot">${statusPill(c.status)}${c.order?`<span class="pill neutral"><span class="d"></span>${c.order}</span>`:''}</div></div>
+    </div>`).join("");
+}
+function filterConv(q){q=q.toLowerCase();
+  document.querySelectorAll("#convList .conv").forEach(el=>{
+    const c=CONVERSATIONS.find(x=>x.id===el.dataset.id);
+    el.style.display=(c.name+c.preview+(c.order||"")).toLowerCase().includes(q)?"":"none";});
+}
+function openConv(id){
+  activeConv=id;const c=CONVERSATIONS.find(x=>x.id===id);
+  document.querySelectorAll("#convList .conv").forEach(e=>e.classList.toggle("active",e.dataset.id===id));
+  document.getElementById("inbox").classList.add("show-chat");
+  const msgs=c.messages.map(renderMsg).join("");
+  const draft=c.aiDraft?`<div class="ai-draft" id="aiDraft">
+      <div class="adt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">${ICO2.bot}</svg>AI suggested reply · review before sending</div>
+      <div style="font-size:13px;line-height:1.5" id="draftText">${c.aiDraft}</div>
+      <div style="display:flex;gap:8px;margin-top:11px">
+        <button class="btn primary sm" onclick="sendDraft('${id}')">Approve &amp; send</button>
+        <button class="btn sm" onclick="regenDraft()">Regenerate</button>
+      </div></div>`:"";
+  document.getElementById("chatPane").innerHTML=`
+    <div class="chat-head">${chanIcon(c.channel)}
+      <div style="flex:1"><div style="font-weight:600;font-size:14px">${c.name}</div>
+        <div class="tiny muted">${c.customer.location} · ${c.channel==='whatsapp'?'WhatsApp':c.channel==='instagram'?'Instagram DM':'Website chat'}</div></div>
+      ${statusPill(c.status)}
+      <button class="btn sm" onclick="handoff('${id}')" style="margin-left:8px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 11a4 4 0 10-8 0M4 21a8 8 0 0116 0"/></svg> Hand off</button>
+    </div>
+    <div class="chat-body" id="chatBody">${msgs}</div>
+    <div class="chat-foot">${draft}
+      <div class="compose"><textarea id="composeBox" placeholder="Type a reply, or let AI draft it…"></textarea>
+        <button class="btn" onclick="aiAssist('${id}')" title="AI draft"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15">${ICO2.bot}</svg></button>
+        <button class="btn primary" onclick="sendTyped('${id}')">Send</button></div></div>`;
+  renderCtx(c);
+  const cb=document.getElementById("chatBody");cb.scrollTop=cb.scrollHeight;
+}
+function renderMsg(m){
+  if(m.s==="note")return `<div class="msg note">⚑ ${m.t}</div>`;
+  const ai=m.ai?' · AI':'';
+  return `<div class="msg ${m.s==='in'?'in':'out'}">${m.t}<div class="m-time">${m.time}${m.s==='out'?ai:''}</div></div>`;
+}
+function renderCtx(c){
+  const o=c.order?ORDERS.find(x=>x.id===c.order):null;
+  document.getElementById("ctxPane").innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <div class="avatar" style="width:40px;height:40px;font-size:14px">${initials(c.name)}</div>
+      <div><div style="font-weight:600">${c.name}</div><div class="tiny muted">${c.customer.tier} customer</div></div></div>
+    <h4>Customer</h4>
+    <div class="row"><span class="l">Contact</span><span>${c.customer.phone}</span></div>
+    <div class="row"><span class="l">Location</span><span>${c.customer.location}</span></div>
+    <div class="row"><span class="l">Lifetime orders</span><span>${c.customer.orders}</span></div>
+    <div class="row"><span class="l">Lifetime value</span><span>${c.customer.ltv?money(c.customer.ltv):'—'}</span></div>
+    ${o?`<h4>Linked order</h4>
+      <div class="card" style="padding:12px;box-shadow:none;cursor:pointer" onclick="go('orders');setTimeout(()=>openOrder('${o.id}'),120)">
+        <div style="font-weight:600;font-size:13px">${o.id} · ${o.product}</div>
+        <div class="tiny muted" style="margin:4px 0 8px">Stage ${o.stage+1}/9 · ${stageName(o)}</div>
+        <div class="bar"><i style="width:${(o.stage+1)/9*100}%"></i></div>
+        <div class="tiny muted" style="margin-top:7px">Expected: ${fmtDate(o.due)}</div></div>`:''}
+    <h4>AI summary</h4>
+    <div style="font-size:12.5px;color:var(--ink-2);line-height:1.55;background:var(--ai-soft);border-radius:10px;padding:11px 12px">${c.summary}</div>
+    <h4>Resolution</h4>${statusPill(c.status)}`;
+}
+function aiAssist(id){
+  const c=CONVERSATIONS.find(x=>x.id===id);
+  const foot=document.querySelector(".chat-foot");if(!foot)return;
+  if(document.getElementById("aiDraft")){toast("AI draft already shown above");return;}
+  const draftText=c.aiDraft||"Thanks for reaching out! Let me pull that up for you right away. One moment…";
+  const div=document.createElement("div");div.className="ai-draft";div.id="aiDraft";div.style.opacity=0;
+  div.innerHTML=`<div class="adt"><span class="typing"><i></i><i></i><i></i></span> AI is drafting a reply…</div>`;
+  foot.insertBefore(div,foot.firstChild);
+  requestAnimationFrame(()=>{div.style.transition="opacity .2s";div.style.opacity=1;});
+  setTimeout(()=>{div.innerHTML=`<div class="adt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">${ICO2.bot}</svg>AI suggested reply · review before sending</div>
+    <div style="font-size:13px;line-height:1.5">${draftText}</div>
+    <div style="display:flex;gap:8px;margin-top:11px"><button class="btn primary sm" onclick="sendDraft('${id}')">Approve &amp; send</button>
+    <button class="btn sm" onclick="regenDraft()">Regenerate</button></div>`;},1300);
+}
+function regenDraft(){toast("Regenerating a fresh AI draft… (simulated)");}
+function sendDraft(id){
+  const c=CONVERSATIONS.find(x=>x.id===id);
+  const txt=c.aiDraft||document.querySelector("#aiDraft div:nth-child(2)")?.textContent||"Thanks!";
+  pushMsg(id,{s:"out",t:txt,time:nowTime(),ai:true});
+  c.aiDraft=null;if(c.status==="needs-human")c.status="ai-handled";
+  document.getElementById("aiDraft")?.remove();
+  openConv(id);renderNav();toast("Reply sent via "+(c.channel==='whatsapp'?'WhatsApp':c.channel));
+}
+function sendTyped(id){
+  const box=document.getElementById("composeBox");if(!box.value.trim())return;
+  pushMsg(id,{s:"out",t:box.value.trim(),time:nowTime()});box.value="";
+  const cb=document.getElementById("chatBody");cb.scrollTop=cb.scrollHeight;
+}
+function pushMsg(id,m){CONVERSATIONS.find(x=>x.id===id).messages.push(m);
+  const cb=document.getElementById("chatBody");if(cb){cb.insertAdjacentHTML("beforeend",renderMsg(m));cb.scrollTop=cb.scrollHeight;}}
+function handoff(id){const c=CONVERSATIONS.find(x=>x.id===id);c.status="escalated";
+  pushMsg(id,{s:"note",t:"Conversation handed off to a human team member — full AI summary attached"});
+  openConv(id);renderNav();toast("Handed off to a human agent");}
+
+/* ================= ORDERS ================= */
+let orderFilter="all";
+VIEWS.orders=()=>`
+  <div class="page-head"><div><div class="page-title">Order Management</div>
+    <div class="page-sub">Live production status for every order — with automatic delay detection.</div></div></div>
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap" id="ordFilters">
+    ${ordFilterBtn("all","All orders",ORDERS.length)}
+    ${ordFilterBtn("risk","At risk",ORDERS.filter(o=>o.risk!=="ok").length)}
+    ${ordFilterBtn("rush","Rush",ORDERS.filter(o=>o.rush).length)}
+    ${ordFilterBtn("active","In production",ORDERS.filter(o=>o.stage>0&&o.stage<8).length)}
+    <div class="search" style="margin-left:auto;max-width:260px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>
+      <input id="ordSearch" placeholder="Search orders…" oninput="renderOrderRows()"></div>
+  </div>
+  <div class="card"><table><thead><tr>
+    <th>Order</th><th>Customer</th><th>Product</th><th>Production stage</th><th>Expected</th><th>Value</th><th>Status</th>
+  </tr></thead><tbody id="ordRows"></tbody></table></div>`;
+function ordFilterBtn(id,l,c){return `<button class="chip ${id===orderFilter?'on':''}" onclick="setOrderFilter('${id}')">${l} · ${c}</button>`;}
+function setOrderFilter(f){orderFilter=f;document.querySelectorAll("#ordFilters .chip").forEach((b,i)=>{});go('orders');}
+AFTER.orders=()=>renderOrderRows();
+function renderOrderRows(){
+  const q=(document.getElementById("ordSearch")?.value||"").toLowerCase();
+  let list=ORDERS.filter(o=>{
+    if(orderFilter==="risk"&&o.risk==="ok")return false;
+    if(orderFilter==="rush"&&!o.rush)return false;
+    if(orderFilter==="active"&&!(o.stage>0&&o.stage<8))return false;
+    return (o.id+o.customer+o.product+o.location).toLowerCase().includes(q);
+  });
+  document.getElementById("ordRows").innerHTML=list.map(o=>`<tr onclick="openOrder('${o.id}')">
+    <td><b>${o.id}</b>${o.rush?' <span class="pill risk" style="margin-left:4px"><span class="d"></span>Rush</span>':''}</td>
+    <td><div style="display:flex;align-items:center;gap:9px"><div class="avatar">${initials(o.customer)}</div>
+      <div><div style="font-weight:500">${o.customer}</div><div class="tiny muted">${o.location}</div></div></div></td>
+    <td>${o.product}</td>
+    <td><div style="font-size:12.5px;margin-bottom:5px">${stageName(o)} <span class="muted">· ${o.stage+1}/9</span></div>
+      <div class="bar" style="width:130px"><i style="width:${(o.stage+1)/9*100}%;background:${o.risk==='risk'?'var(--risk)':o.risk==='warn'?'var(--warn)':'var(--accent)'}"></i></div></td>
+    <td>${fmtDate(o.due)}</td><td><b>${money(o.value)}</b></td><td>${riskPill(o.risk)}</td>
+  </tr>`).join("")||`<tr><td colspan="7" style="text-align:center;color:var(--ink-3);padding:30px">No orders match.</td></tr>`;
+}
+function openOrder(id){
+  const o=ORDERS.find(x=>x.id===id);
+  const tl=PROD_STAGES.map((s,i)=>{
+    const cls=i<o.stage?"done":i===o.stage?"active":"pending";
+    const meta=i===o.stage?(o.delay?`<span style="color:var(--risk)">● ${o.delay}</span>`:"In progress now"):i<o.stage?"Completed":"Pending";
+    return `<li class="${cls}"><div class="tl-title">${s}</div><div class="tl-meta">${meta}</div></li>`;}).join("");
+  const meas=Object.entries(o.measurements).map(([k,v])=>`<div class="m"><span class="l">${k}</span><span><b>${v}</b></span></div>`).join("");
+  drawerCustom(`${o.id} · ${o.product}`,`
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
+      <div class="avatar" style="width:42px;height:42px;font-size:15px">${initials(o.customer)}</div>
+      <div style="flex:1"><div style="font-weight:600;font-size:15px">${o.customer}</div><div class="tiny muted">${o.location} · placed ${fmtDate(o.placed)}</div></div>
+      ${riskPill(o.risk)}</div>
+    ${o.risk!=="ok"?`<div style="background:var(--${o.risk==='risk'?'risk':'warn'}-soft);border:1px solid var(--${o.risk==='risk'?'risk':'warn'}-soft);border-radius:11px;padding:12px 14px;margin-bottom:18px;display:flex;gap:11px;align-items:flex-start">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--${o.risk==='risk'?'risk':'warn'})" stroke-width="2" width="18" style="flex:none;margin-top:1px">${ICO2.alert}</svg>
+      <div><div style="font-weight:600;font-size:13px;color:var(--${o.risk==='risk'?'risk':'warn'})">${o.risk==='risk'?'Delay detected — action needed':'Timeline is tight'}</div>
+      <div class="tiny" style="color:var(--ink-2);margin-top:3px">${o.delay||'Monitor closely to stay on schedule.'} The ops team has been alerted and a proactive customer message is drafted.</div></div></div>`:''}
+    <div class="od-section"><h4>Expected delivery</h4>
+      <div style="font-size:20px;font-weight:700">${fmtDate(o.due)}</div>
+      <div class="tiny muted">Standard lead time: ${CONFIG.policies.standardLeadWeeks} weeks ${o.rush?'· <span style="color:var(--risk);font-weight:600">RUSH order</span>':''}</div></div>
+    <div class="od-section"><h4>Production timeline</h4><ul class="timeline">${tl}</ul></div>
+    <div class="od-section"><h4>Customer measurements</h4><div class="meas-grid">${meas}</div></div>
+    <div style="display:flex;gap:9px"><button class="btn primary" style="flex:1" onclick="toast('Status update sent to customer via WhatsApp (simulated)')">Send status update</button>
+      <button class="btn" onclick="closeDrawer()">Close</button></div>`);
+}
+
+/* ================= SHOPPING ASSISTANT ================= */
+let shopPrefs={occasion:null,budget:null};
+VIEWS.shop=()=>`
+  <div class="page-head"><div><div class="page-title">AI Shopping Assistant</div>
+    <div class="page-sub">Conversational product discovery — the way your customers would actually experience it.</div></div>
+    <span class="sim-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>customer-facing preview</span></div>
+  <div class="grid" style="grid-template-columns:400px 1fr">
+    <div class="card" style="display:flex;flex-direction:column;height:calc(100vh - 170px);min-height:520px">
+      <div class="card-head"><div style="display:flex;align-items:center;gap:9px"><div class="chan-ico chan-web"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">${ICO2.bot}</svg></div><h3>Shopping chat</h3></div><span class="pill ai"><span class="d"></span>AI stylist</span></div>
+      <div class="chat-body" id="shopBody" style="flex:1"></div>
+      <div class="chat-foot">
+        <div class="chips" style="margin-bottom:10px" id="shopChips">
+          ${["Wedding guest dress","Groom sherwani","Black-tie gala","Under $400","Bridal"].map(q=>`<button class="chip" onclick="shopAsk('${q}')">${q}</button>`).join("")}
+        </div>
+        <div class="compose"><textarea id="shopInput" placeholder="Ask about products, sizes, fabric, occasion…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();shopSend()}"></textarea>
+          <button class="btn primary" onclick="shopSend()">Send</button></div>
+      </div>
+    </div>
+    <div class="card"><div class="card-head"><h3>Recommended for this customer</h3><span class="muted tiny" id="recNote">AI updates these as the chat progresses</span></div>
+      <div class="card-pad"><div class="prod-grid" id="recGrid"></div></div></div>
+  </div>`;
+AFTER.shop=()=>{document.getElementById("shopBody").innerHTML="";
+  shopBot("Hi! I'm your AI stylist 👗 Tell me the occasion, your size, and a budget — and I'll find the perfect piece. What are you shopping for?");
+  renderRecs(PRODUCTS.slice(0,4),"Popular picks");};
+function shopAsk(q){document.getElementById("shopInput").value=q;shopSend();}
+function shopSend(){const i=document.getElementById("shopInput");const v=i.value.trim();if(!v)return;
+  shopUser(v);i.value="";setTimeout(()=>shopRespond(v),650);}
+function shopUser(t){const b=document.getElementById("shopBody");if(!b)return;
+  b.insertAdjacentHTML("beforeend",`<div class="msg out">${t}</div>`);b.scrollTop=b.scrollHeight;}
+function shopBot(t,products){const b=document.getElementById("shopBody");if(!b)return;
+  const typing=`<div class="msg in" id="st"><span class="typing"><i></i><i></i><i></i></span></div>`;
+  b.insertAdjacentHTML("beforeend",typing);b.scrollTop=b.scrollHeight;
+  setTimeout(()=>{const b2=document.getElementById("shopBody");if(!b2)return;document.getElementById("st")?.remove();
+    b2.insertAdjacentHTML("beforeend",`<div class="msg in">${t}</div>`);
+    if(products&&products.length){
+      b2.insertAdjacentHTML("beforeend",`<div class="msg in" style="max-width:88%;padding:8px">${products.map(p=>miniProd(p)).join("")}</div>`);}
+    b2.scrollTop=b2.scrollHeight;},700);}
+function miniProd(p){return `<div style="display:flex;gap:10px;align-items:center;padding:7px;border-radius:10px;cursor:pointer" onclick="go('shop')">
+  <img src="${garmentSVG(p.type,p.seed)}" style="width:46px;height:60px;border-radius:7px;object-fit:cover"/>
+  <div><div style="font-weight:600;font-size:12.5px">${p.name}</div><div class="tiny muted">${p.fabric} · ${p.occasion}</div><div style="font-weight:700;font-size:12.5px;margin-top:2px">from ${money(p.price)}</div></div></div>`;}
+function shopRespond(q){
+  q=q.toLowerCase();let picks=[],msg="",note="";
+  const match=tags=>PRODUCTS.filter(p=>tags.some(t=>p.tags.includes(t)||p.cat.toLowerCase().includes(t)||p.occasion.toLowerCase().includes(t)));
+  if(/budget|under|\$|cheap|affordable|400|300|500/.test(q)){
+    const cap=parseInt((q.match(/\d{3}/)||[400])[0]);picks=PRODUCTS.filter(p=>p.price<=cap).slice(0,3);
+    msg=`Here are beautiful options under ${money(cap)}. Each can be made to measure. Would you like to see fabric details or book a styling consult?`;note="Filtered by budget";}
+  else if(/wedding guest|guest/.test(q)){picks=match(["eveningwear","reception","party","festive"]).slice(0,3);
+    msg="For a wedding guest, these are elegant without upstaging the couple. What's your size and budget so I can refine?";note="Occasion: wedding guest";}
+  else if(/sherwani|groom|men|suit|blazer/.test(q)){picks=match(["menswear","formalwear","sherwani","suit"]).slice(0,3);
+    msg="Great menswear choices! Our Embroidered Sherwani is our most popular groom piece. Shall I check availability for your wedding date?";note="Menswear";}
+  else if(/bridal|bride|lehenga/.test(q)){picks=match(["bridal","lehenga"]).concat(match(["festive"])).slice(0,3);
+    msg="Congratulations on your wedding! 💍 Our bridal pieces are fully custom. These take 8–10 weeks — when is your big day? I can check the timeline.";note="Bridal";}
+  else if(/gala|black.?tie|evening|formal|gown/.test(q)){picks=match(["eveningwear","gown","evening"]).slice(0,3);
+    msg="For black-tie, these eveningwear pieces are perfect. What size should I check, and do you have a colour preference?";note="Eveningwear";}
+  else if(/size|measure|fit/.test(q)){picks=PRODUCTS.slice(0,3);
+    msg="We offer standard sizing and full made-to-measure. For custom, we'll collect your measurements over WhatsApp. Which piece caught your eye?";note="Sizing";}
+  else if(/fabric|silk|material|velvet/.test(q)){picks=match(["silk","velvet"]).slice(0,3);
+    msg="We work with pure silk, raw silk, velvet, georgette and Italian wool. Natural fabrics breathe beautifully. Any occasion in mind?";note="Fabric enquiry";}
+  else{picks=PRODUCTS.slice(0,3);
+    msg="I'd love to help you find the perfect piece! Could you tell me the occasion, your size, and a rough budget?";note="Discovery";}
+  shopBot(msg,picks);
+  if(picks.length)renderRecs(picks,note);
+}
+function renderRecs(list,note){
+  const grid=document.getElementById("recGrid");if(!grid)return;
+  document.getElementById("recNote").textContent=note||"AI updates these as the chat progresses";
+  grid.innerHTML=list.map(p=>`<div class="prod">
+    <div class="img"><img src="${garmentSVG(p.type,p.seed)}"/></div>
+    <div class="meta"><div class="pname">${p.name}</div><div class="pcat">${p.fabric} · ${p.occasion}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+        <span class="pprice">from ${money(p.price)}</span><span class="tiny muted">${p.sizes}</span></div></div></div>`).join("");
+}
+
+/* ================= VOICE RECEPTIONIST ================= */
+let activeCall=CALLS[0].id;
+VIEWS.voice=()=>`
+  <div class="page-head"><div><div class="page-title">AI Voice Receptionist</div>
+    <div class="page-sub">Answers every call — even after hours — captures the lead, and books the follow-up.</div></div>
+    <span class="sim-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>voice AI · simulated</span></div>
+  <div class="kpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">
+    ${kpiCard({ico:"phone2",val:CALLS.length,lbl:"Calls today",delta:"all answered",dir:"up"})}
+    ${kpiCard({ico:"moon",val:CALLS.filter(c=>c.afterHours).length,lbl:"After-hours captured",delta:"0 lost",dir:"up"})}
+    ${kpiCard({ico:"capture",val:CALLS.filter(c=>c.lead).length,lbl:"Leads captured",delta:"+"+CALLS.filter(c=>c.lead).length,dir:"up"})}
+    ${kpiCard({ico:"alert",val:CALLS.filter(c=>c.type==='missed').length,lbl:"Missed → recovered",delta:"auto WhatsApp",dir:"up"})}
+  </div>
+  <div class="grid" style="grid-template-columns:380px 1fr">
+    <div class="card"><div class="card-head"><h3>Call history</h3><span class="tiny muted">${CONFIG.policies.businessHours}</span></div>
+      <div id="callList"></div></div>
+    <div class="card" id="callDetail"></div>
+  </div>`;
+AFTER.voice=()=>{renderCallList();openCall(activeCall);};
+function renderCallList(){
+  const ph='<path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3 19.5 19.5 0 01-6-6 19.8 19.8 0 01-3-8.6A2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.3-1.2a2 2 0 012.1-.5c.9.3 1.8.6 2.8.7a2 2 0 011.7 2z"/>';
+  const miss='<path d="M22 2 2 22M8 2H2v6"/><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3 19.5 19.5 0 01-6-6"/>';
+  document.getElementById("callList").innerHTML=CALLS.map(c=>{
+    const cls=c.type==="missed"?"call-missed":c.afterHours?"call-after":"call-done";
+    return `<div class="call-row" onclick="openCall('${c.id}')">
+      <div class="call-ico ${cls}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">${c.type==='missed'?miss:ph}</svg></div>
+      <div style="flex:1"><div style="font-weight:600;font-size:13px">${c.name}</div>
+        <div class="tiny muted">${c.number} · ${c.time}${c.dur!=='—'?' · '+c.dur:''}</div></div>
+      ${c.afterHours?'<span class="pill warn"><span class="d"></span>After hours</span>':c.type==='missed'?'<span class="pill risk"><span class="d"></span>Missed</span>':'<span class="pill ok"><span class="d"></span>Handled</span>'}
+    </div>`;}).join("");
+}
+function openCall(id){
+  activeCall=id;const c=CALLS.find(x=>x.id===id);
+  const tr=c.transcript.map(m=>{
+    if(m.s==="note")return `<div class="msg note" style="max-width:90%">⚑ ${m.t}</div>`;
+    return `<div class="msg ${m.s==='ai'?'out':'in'}">${m.t}<div class="m-time">${m.s==='ai'?'AI receptionist':c.name}</div></div>`;}).join("");
+  document.getElementById("callDetail").innerHTML=`
+    <div class="card-head"><h3>${c.name} <span class="muted" style="font-weight:400">· ${c.time}</span></h3>
+      ${c.afterHours?'<span class="pill warn"><span class="d"></span>After hours</span>':''}</div>
+    <div class="card-pad">
+      <h4 style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);margin:0 0 9px">Call summary</h4>
+      <div style="font-size:13px;line-height:1.55;background:var(--ai-soft);border-radius:11px;padding:12px 14px;margin-bottom:18px">${c.summary}</div>
+      ${c.lead?`<h4 style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);margin:0 0 9px">Lead captured</h4>
+        <div class="card" style="box-shadow:none;padding:13px;margin-bottom:18px">
+          <div class="ctx"><div class="row"><span class="l">Name</span><span><b>${c.lead.name}</b></span></div>
+          <div class="row"><span class="l">Intent</span><span>${c.lead.intent}</span></div>
+          <div class="row"><span class="l">Budget</span><span>${c.lead.budget}</span></div>
+          <div class="row"><span class="l">Contact</span><span>${c.lead.contact}</span></div></div></div>`:''}
+      <h4 style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);margin:0 0 9px">Transcript</h4>
+      <div style="background:var(--surface-2);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;max-height:280px;overflow-y:auto">${tr}</div>
+      ${c.followup?`<div style="display:flex;align-items:center;gap:11px;margin-top:18px;background:var(--accent-soft);border-radius:11px;padding:12px 14px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" width="18" style="flex:none">${ICO2.calendar}</svg>
+        <div style="flex:1"><div class="tiny muted">Follow-up task created</div><div style="font-weight:600;font-size:13px">${c.followup}</div></div>
+        <button class="btn sm" onclick="toast('Follow-up marked complete (simulated)')">Complete</button></div>`:''}
+    </div>`;
+}
+
+/* ================= WORKFLOWS ================= */
+VIEWS.workflow=()=>`
+  <div class="page-head"><div><div class="page-title">Workflow Automation</div>
+    <div class="page-sub">The rules that run your operation automatically. Toggle any workflow on or off.</div></div>
+    <button class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> New workflow</button></div>
+  <div class="card" id="wfCard"></div>
+  <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:16px">
+    <div class="card card-pad"><h3 style="font-size:14px;margin-bottom:6px">Rush-order qualification</h3>
+      <p class="tiny muted" style="margin:0 0 14px">Try it: enter a requested date and the AI checks it against your ${CONFIG.policies.standardLeadWeeks}-week standard.</p>
+      <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center">
+        <input type="text" class="field" id="rushDate" placeholder="e.g. Oct 23" style="flex:1;min-width:120px"/>
+        <button class="btn primary" onclick="checkRush()">Check feasibility</button></div>
+      <div id="rushResult" style="margin-top:14px"></div></div>
+    <div class="card card-pad"><h3 style="font-size:14px;margin-bottom:6px">Escalation rules</h3>
+      <p class="tiny muted" style="margin:0 0 12px">When the AI hands a conversation to a human.</p>
+      ${["Negative sentiment detected","Custom quote or pricing exception","Complaint or refund request","Explicit request for a human","Legal / press enquiry"].map(r=>`
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line-2)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2.5" width="15"><path d="M20 6 9 17l-5-5"/></svg>
+          <span style="font-size:13px">${r}</span></div>`).join("")}</div>
+  </div>`;
+AFTER.workflow=()=>renderWF();
+function renderWF(){
+  const ic={bell:'<path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/>',
+    alert:ICO2.alert,zap:'<path d="M13 2 3 14h7l-1 8 10-12h-7z"/>',calendar:ICO2.calendar,
+    phone:'<path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3 19.5 19.5 0 01-6-6 19.8 19.8 0 01-3-8.6A2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.3-1.2a2 2 0 012.1-.5c.9.3 1.8.6 2.8.7a2 2 0 011.7 2z"/>',
+    user:ICO2.user,heart:'<path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 000-7.8z"/>'};
+  document.getElementById("wfCard").innerHTML=WORKFLOWS.map(w=>`
+    <div class="wf"><div class="wf-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">${ic[w.icon]}</svg></div>
+      <div class="wf-main"><div class="wf-name">${w.name}</div><div class="wf-desc">${w.desc}</div>
+        <div class="wf-flow">${w.flow}</div></div>
+      <div style="text-align:right;flex:none"><div class="tiny muted" style="margin-bottom:8px">${w.on?w.last:'Paused'}</div>
+        <button class="toggle ${w.on?'on':''}" onclick="toggleWF('${w.id}')"></button></div></div>`).join("");
+}
+function toggleWF(id){const w=WORKFLOWS.find(x=>x.id===id);w.on=!w.on;renderWF();toast(`"${w.name}" ${w.on?'enabled':'paused'}`);}
+function checkRush(){
+  const rr=document.getElementById("rushResult");if(!rr)return;
+  const v=(document.getElementById("rushDate")?.value||"").trim()||"Oct 23";
+  rr.innerHTML=`<div class="typing" style="padding:4px"><i></i><i></i><i></i></div>`;
+  setTimeout(()=>{const rr2=document.getElementById("rushResult");if(!rr2)return;rr2.innerHTML=`
+    <div style="background:var(--warn-soft);border:1px solid #ecd9ab;border-radius:11px;padding:13px 14px">
+      <div style="display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px;color:var(--warn);margin-bottom:7px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16">${ICO2.zap}</svg>Rush order — feasibility check</div>
+      <div style="font-size:12.5px;line-height:1.55;color:var(--ink-2)">
+        Requested date <b>${v}</b> is <b>earlier than the ${CONFIG.policies.standardLeadWeeks}-week standard</b>.
+        A rush is possible with a <b>${CONFIG.policies.rushSurcharge} surcharge</b>, subject to production confirmation.
+        The AI has collected the details and escalated to the production team for a firm quote — <b>no promise is made to the customer until confirmed</b>.
+      </div></div>`;toast("Rush request qualified & escalated (simulated)");},900);
+}
+
+/* ================= ANALYTICS ================= */
+VIEWS.analytics=()=>`
+  <div class="page-head"><div><div class="page-title">Analytics</div>
+    <div class="page-sub">How much your AI is handling — and the time &amp; revenue it's protecting.</div></div>
+    <span class="sim-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>sample analytics — not live data</span></div>
+  <div class="kpis" style="margin-bottom:16px">${ANALYTICS.kpis.slice(0,4).map(kpiCard).join("")}</div>
+  <div class="kpis" style="margin-bottom:16px">${ANALYTICS.kpis.slice(4).map(kpiCard).join("")}</div>
+  <div class="grid" style="grid-template-columns:2fr 1fr">
+    <div class="card"><div class="card-head"><h3>Inquiries handled · last 14 days</h3>
+      <div class="legend"><span><i style="background:var(--accent)"></i>Total</span><span><i style="background:var(--ai)"></i>Resolved by AI</span></div></div>
+      <div class="chart-wrap">${barChart()}</div></div>
+    <div class="card"><div class="card-head"><h3>Channel mix</h3></div>
+      <div class="card-pad">${donut()}</div></div>
+  </div>
+  <div class="card card-pad" style="margin-top:16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+    <div style="flex:none;width:52px;height:52px;border-radius:13px;background:var(--ok-soft);color:var(--ok);display:grid;place-items:center">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="26">${ICO2.save}</svg></div>
+    <div style="flex:1;min-width:220px"><h3 style="font-size:15px">Estimated impact this period</h3>
+      <p class="tiny muted" style="margin:3px 0 0">Illustrative — based on sample inquiry volumes and average manual handling time. Replace with the client's real figures.</p></div>
+    <div style="display:flex;gap:28px;flex-wrap:wrap">
+      <div><div style="font-size:22px;font-weight:700">47 hrs</div><div class="tiny muted">team time saved</div></div>
+      <div><div style="font-size:22px;font-weight:700">19</div><div class="tiny muted">after-hours leads kept</div></div>
+      <div><div style="font-size:22px;font-weight:700">~${money(9400)}</div><div class="tiny muted">pipeline protected*</div></div>
+    </div></div>
+  <p class="tiny muted" style="margin-top:10px">*Illustrative sample figure for demonstration only. Not a guarantee or a record of actual sales.</p>`;
+function barChart(){
+  const d=ANALYTICS.daily,r=ANALYTICS.resolved,max=Math.max(...d)*1.1,W=620,H=200,n=d.length,bw=W/n;
+  let bars="";
+  for(let i=0;i<n;i++){
+    const h1=d[i]/max*H,h2=r[i]/max*H,x=i*bw+bw*0.18,w=bw*0.64;
+    bars+=`<rect x="${x}" y="${H-h1}" width="${w}" height="${h1}" rx="3" fill="var(--accent)" opacity=".28"/>
+      <rect x="${x}" y="${H-h2}" width="${w}" height="${h2}" rx="3" fill="var(--ai)"/>`;}
+  return `<svg viewBox="0 0 ${W} ${H+22}" style="width:100%;height:auto">${bars}
+    <line x1="0" y1="${H}" x2="${W}" y2="${H}" stroke="var(--line)" stroke-width="1"/>
+    <text x="2" y="${H+16}" font-size="10" fill="var(--ink-3)">14 days ago</text>
+    <text x="${W-34}" y="${H+16}" font-size="10" fill="var(--ink-3)">today</text></svg>`;
+}
+function donut(){
+  const data=ANALYTICS.channelMix,total=data.reduce((a,b)=>a+b.v,0);let off=0,segs="";
+  const R=58,C=2*Math.PI*R;
+  data.forEach(d=>{const frac=d.v/total,len=frac*C;
+    segs+=`<circle cx="80" cy="80" r="${R}" fill="none" stroke="${d.c}" stroke-width="22"
+      stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 80 80)"/>`;off+=len;});
+  const legend=data.map(d=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line-2)">
+    <span style="display:flex;align-items:center;gap:8px;font-size:12.5px"><i style="width:10px;height:10px;border-radius:3px;background:${d.c};display:inline-block"></i>${d.l}</span>
+    <b style="font-size:12.5px">${d.v}%</b></div>`).join("");
+  return `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center">
+    <svg viewBox="0 0 160 160" style="width:150px;height:150px">${segs}
+      <text x="80" y="76" text-anchor="middle" font-size="22" font-weight="700" fill="var(--ink)">4</text>
+      <text x="80" y="94" text-anchor="middle" font-size="10" fill="var(--ink-3)">channels</text></svg>
+    <div style="flex:1;min-width:150px">${legend}</div></div>`;
+}
+
+/* ================= SETTINGS ================= */
+VIEWS.settings=()=>`
+  <div class="page-head"><div><div class="page-title">Brand Settings</div>
+    <div class="page-sub">This is where a client's identity drops in. Everything in the demo re-skins from here.</div></div></div>
+  <div class="grid" style="grid-template-columns:1fr 1fr">
+    <div class="card card-pad"><h3 style="font-size:14px;margin-bottom:14px">Brand identity</h3>
+      <div class="set-row"><div><div class="l">Brand name</div><div class="d">Shown across the whole app</div></div>
+        <input type="text" class="field" id="setName" value="${CONFIG.brand.name}" style="width:180px"></div>
+      <div class="set-row"><div><div class="l">Logo initials</div><div class="d">Placeholder until a logo is uploaded</div></div>
+        <input type="text" class="field" id="setInit" value="${CONFIG.brand.initials}" maxlength="3" style="width:80px"></div>
+      <div class="set-row"><div><div class="l">Primary color</div><div class="d">Buttons, highlights, active states</div></div>
+        <div style="display:flex;gap:8px;align-items:center"><div class="swatch" style="background:${CONFIG.brand.color}"></div>
+        <input type="text" class="field" id="setColor" value="${CONFIG.brand.color}" style="width:110px"></div></div>
+      <div class="set-row"><div><div class="l">Accent color</div><div class="d">Secondary actions &amp; charts</div></div>
+        <div style="display:flex;gap:8px;align-items:center"><div class="swatch" style="background:${CONFIG.brand.accent}"></div>
+        <input type="text" class="field" id="setAccent" value="${CONFIG.brand.accent}" style="width:110px"></div></div>
+      <button class="btn primary" style="margin-top:16px;width:100%" onclick="applyBrand()">Apply branding</button>
+    </div>
+    <div class="card card-pad"><h3 style="font-size:14px;margin-bottom:14px">Business rules &amp; channels</h3>
+      <div class="set-row"><div><div class="l">Standard lead time</div><div class="d">Used in timelines &amp; rush checks</div></div>
+        <b>${CONFIG.policies.standardLeadWeeks} weeks</b></div>
+      <div class="set-row"><div><div class="l">Rush surcharge</div><div class="d">Applied to qualified rush orders</div></div>
+        <b>${CONFIG.policies.rushSurcharge}</b></div>
+      <div class="set-row"><div><div class="l">Business hours</div><div class="d">Voice AI covers the rest</div></div>
+        <b style="text-align:right">${CONFIG.policies.businessHours}</b></div>
+      ${["whatsapp","webchat","instagram","voice"].map(c=>`<div class="set-row">
+        <div><div class="l" style="text-transform:capitalize">${c==='webchat'?'Website chat':c}</div>
+        <div class="d">${chStatus(c)}</div></div>
+        <button class="toggle ${CONFIG.channels[c]?'on':''}" onclick="toggleCh('${c}')"></button></div>`).join("")}
+    </div>
+  </div>
+  <div class="card card-pad" style="margin-top:16px;background:var(--info-soft);border-color:#cedcec">
+    <div style="display:flex;gap:12px;align-items:flex-start">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="2" width="20" style="flex:none;margin-top:1px"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <div><h3 style="font-size:13.5px;color:var(--info)">Simulated vs. connected</h3>
+        <p class="tiny" style="color:var(--ink-2);margin:5px 0 0;line-height:1.55">
+        This is a <b>demonstration environment</b>. All conversations, orders, calls and analytics are <b>realistic sample data</b> —
+        nothing is connected to live WhatsApp, payment, inventory or calendar systems yet. In a real deployment, the channels above
+        connect to the client's actual accounts and these simulated flows become live.</p></div></div></div>`;
+function chStatus(c){return CONFIG.channels[c]?'<span style="color:var(--info)">● Simulated (ready to connect)</span>':'Disabled';}
+function toggleCh(c){CONFIG.channels[c]=!CONFIG.channels[c];go('settings');}
+function applyBrand(){
+  CONFIG.brand.name=document.getElementById("setName").value||"Your Brand";
+  CONFIG.brand.initials=(document.getElementById("setInit").value||"YB").toUpperCase();
+  CONFIG.brand.color=document.getElementById("setColor").value||"#2b2b2e";
+  CONFIG.brand.accent=document.getElementById("setAccent").value||"#8a6d52";
+  applyBrandVars();toast("Branding applied — the whole app re-skinned");
+}
+function applyBrandVars(){
+  document.documentElement.style.setProperty("--brand",CONFIG.brand.color);
+  document.documentElement.style.setProperty("--accent",CONFIG.brand.accent);
+  document.getElementById("brandMark").textContent=CONFIG.brand.initials;
+  document.getElementById("brandName").textContent=CONFIG.brand.name;
+}
+
+/* =========================================================================
+   SCENARIOS
+   ========================================================================= */
+const SCENARIOS=[
+  {n:1,title:"Product discovery → recommendation",
+    desc:"A customer asks for something for a black-tie gala and the AI stylist recommends relevant pieces.",
+    biz:"Solves: broken on-site search that returns no results. Turns browsing into guided selling.",
+    run:()=>{go("shop");setTimeout(()=>{shopAsk("Something for a black-tie gala, size M");},500);}},
+  {n:2,title:"“Where is my order?”",
+    desc:"A customer messages asking for a status update; the AI answers instantly with the live production stage.",
+    biz:"Solves: international clients left in the dark about production stage. Full order visibility, zero workload.",
+    run:()=>{go("inbox");setTimeout(()=>{openConv("c3");toast("AI answered the order-status question instantly");},500);}},
+  {n:3,title:"After-hours call captured",
+    desc:"A customer calls at 8:12pm when the team is offline; the voice AI captures the lead and books a callback.",
+    biz:"Solves: phone powered off after hours → lost international business. Every call now captured 24/7.",
+    run:()=>{go("voice");setTimeout(()=>{openCall("v1");toast("After-hours lead captured — 0 business lost");},500);}},
+  {n:4,title:"Delayed order → ops alert",
+    desc:"An order falls behind; the system flags it to operations and drafts a proactive customer message.",
+    biz:"Solves: customers finding out late about delays → bad reviews. Get ahead of it before they ask.",
+    run:()=>{go("orders");setTimeout(()=>{setOrderFilter('risk');setTimeout(()=>openOrder("#4819"),250);},450);}},
+  {n:5,title:"Rush-order feasibility check",
+    desc:"A customer needs delivery earlier than standard; the AI collects details and checks feasibility before promising.",
+    biz:"Solves: wrong promises on rush orders → missed deadlines & bad reviews. Set expectations right, every time.",
+    run:()=>{go("workflow");setTimeout(()=>{document.getElementById("rushDate").value="Oct 23";checkRush();document.getElementById("rushResult").scrollIntoView({behavior:"smooth",block:"center"});},550);}},
+  {n:6,title:"Book a styling consultation",
+    desc:"A customer wants a styling session; the AI offers open slots and books it into the calendar.",
+    biz:"Solves: manual back-and-forth to schedule. Automated bookings, no missed appointments.",
+    run:()=>{go("inbox");setTimeout(()=>{openConv("c2");setTimeout(()=>aiAssist("c2"),400);toast("AI offering consultation slots");},500);}},
+  {n:7,title:"Escalate to a human",
+    desc:"A sensitive request needs judgement; the AI hands the conversation to a human with a full summary attached.",
+    biz:"Solves: knowing when AI should step back. Seamless handoff keeps the human in control.",
+    run:()=>{go("inbox");setTimeout(()=>{openConv("c4");toast("Escalated to a human — summary attached");},500);}}
+];
+function renderScenarios(){
+  document.getElementById("scnList").innerHTML=SCENARIOS.map(s=>`
+    <div class="scn"><div class="scn-top"><div class="scn-num">${s.n}</div><div class="scn-title">${s.title}</div></div>
+      <div class="scn-desc">${s.desc}</div>
+      <div class="scn-biz">${s.biz}</div>
+      <button class="btn primary sm" onclick="runScenario(${s.n})">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"><path d="m5 3 14 9-14 9V3z"/></svg> Play scenario</button>
+    </div>`).join("");
+}
+function runScenario(n){const s=SCENARIOS.find(x=>x.n===n);closeDrawer();s.run();}
+
+/* =========================================================================
+   DRAWER / UTIL
+   ========================================================================= */
+let drawerMode="scenarios";
+function openDrawer(){drawerMode="scenarios";document.getElementById("drawer").querySelector(".drawer-head h2").textContent="Demo Scenarios";
+  renderScenarios();document.getElementById("scnList").parentElement; showDrawer();}
+function showDrawer(){document.getElementById("drawer").classList.add("open");document.getElementById("drawerOverlay").classList.add("open");}
+function closeDrawer(){document.getElementById("drawer").classList.remove("open");document.getElementById("drawerOverlay").classList.remove("open");}
+function drawerCustom(title,html){
+  const d=document.getElementById("drawer");d.querySelector(".drawer-head h2").textContent=title;
+  d.querySelector(".drawer-head div div").textContent="Order details";
+  document.getElementById("scnList").innerHTML=html;showDrawer();
+}
+function toast(t){const el=document.getElementById("toast");
+  el.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>${t}`;
+  el.classList.add("show");clearTimeout(window._tt);window._tt=setTimeout(()=>el.classList.remove("show"),2600);}
+function fmtDate(d){const dt=new Date(d+"T00:00:00");return dt.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}
+function nowTime(){return new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:false});}
+
+/* fix ICO2 phone2 */
+ICO2.phone2='<path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3 19.5 19.5 0 01-6-6 19.8 19.8 0 01-3-8.6A2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.3-1.2a2 2 0 012.1-.5c.9.3 1.8.6 2.8.7a2 2 0 011.7 2z"/>';
+
+/* =========================================================================
+   INIT
+   ========================================================================= */
+document.getElementById("scnBtn").onclick=openDrawer;
+document.getElementById("drawerClose").onclick=closeDrawer;
+document.getElementById("drawerOverlay").onclick=closeDrawer;
+document.getElementById("menuBtn").onclick=()=>document.getElementById("sidebar").classList.toggle("open");
+document.getElementById("globalSearch").addEventListener("keydown",e=>{
+  if(e.key==="Enter"){const q=e.target.value.trim();if(!q)return;
+    const o=ORDERS.find(x=>(x.id+x.customer).toLowerCase().includes(q.toLowerCase()));
+    if(o){go("orders");setTimeout(()=>openOrder(o.id),150);}else{go("inbox");}
+    e.target.value="";}});
+/* ---- URL-param theming (used by the canvas to render variations) ---- */
+(function(){
+  const p=new URLSearchParams(location.search);
+  if(p.get("color"))CONFIG.brand.color=p.get("color");
+  if(p.get("accent"))CONFIG.brand.accent=p.get("accent");
+  if(p.get("brand")){const b=p.get("brand");CONFIG.brand.name=b;
+    CONFIG.brand.initials=b.split(/\s+/).map(w=>w[0]).join("").slice(0,2).toUpperCase();}
+  window.__startView=p.get("view")||"dashboard";
+})();
+renderNav();applyBrandVars();go(window.__startView||"dashboard");
+</script>
+</body>
+</html>

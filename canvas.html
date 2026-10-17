@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fashion AI Canvas</title>
+<style>
+:root{
+  --ink:#1b1b1d;--ink-2:#55565c;--ink-3:#8a8b92;
+  --bg:#edeae4;--grid:#dcd8d0;--surface:#ffffff;--line:#e2ded7;
+  --brand:#2b2b2e;--accent:#8a6d52;--shadow:0 10px 40px rgba(20,18,15,.18);
+  --font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+:root:not([data-theme="light"]){
+  @media (prefers-color-scheme: dark){
+    --ink:#f2f0ec;--ink-2:#c2c0bb;--ink-3:#8f8d88;
+    --bg:#1a1917;--grid:#262420;--surface:#232120;--line:#34312d;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#f2f0ec;--ink-2:#c2c0bb;--ink-3:#8f8d88;
+  --bg:#1a1917;--grid:#262420;--surface:#232120;--line:#34312d;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:var(--font);color:var(--ink);background:var(--bg)}
+
+/* ---- canvas ---- */
+.viewport{position:fixed;inset:0;overflow:hidden;cursor:grab;
+  background:
+    radial-gradient(circle at 1px 1px,var(--grid) 1.3px,transparent 0);
+  background-size:26px 26px;touch-action:none}
+.viewport.panning{cursor:grabbing}
+.viewport.interact{cursor:default}
+.world{position:absolute;top:0;left:0;transform-origin:0 0;will-change:transform}
+
+.frame{position:absolute;background:var(--surface);border-radius:16px;box-shadow:var(--shadow);
+  border:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+.frame-head{height:46px;flex:none;display:flex;align-items:center;gap:10px;padding:0 10px 0 15px;
+  background:var(--surface);border-bottom:1px solid var(--line);cursor:grab;user-select:none}
+.frame.dragging .frame-head{cursor:grabbing}
+.sw{width:15px;height:15px;border-radius:5px;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.frame-title{font-weight:650;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.frame-sub{font-size:11.5px;color:var(--ink-3);font-weight:500}
+.fbtns{display:flex;gap:4px;flex:none}
+.fbtn{width:28px;height:28px;border-radius:7px;border:1px solid var(--line);background:var(--surface);
+  display:grid;place-items:center;color:var(--ink-2);cursor:pointer}
+.fbtn:hover{background:var(--bg)}
+.fbtn svg{width:14px;height:14px}
+.frame-body{flex:1;position:relative;background:#faf8f5}
+.frame-body iframe{border:0;width:100%;height:100%;display:block}
+.frame-overlay{position:absolute;inset:0;z-index:2;background:transparent;cursor:grab}
+.viewport.interact .frame-overlay{display:none}
+
+/* ---- toolbar ---- */
+.toolbar{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:50;
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:6px;padding:7px 9px}
+.tb-brand{display:flex;align-items:center;gap:9px;padding:0 10px 0 4px;border-right:1px solid var(--line);margin-right:3px}
+.tb-mark{width:30px;height:30px;border-radius:8px;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px}
+.tb-name{font-weight:700;font-size:13.5px;line-height:1}
+.tb-sub{font-size:10.5px;color:var(--ink-3)}
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);
+  color:var(--ink);padding:8px 12px;border-radius:9px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer}
+.btn:hover{background:var(--bg)}
+.btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn svg{width:15px;height:15px}
+.seg{display:flex;background:var(--bg);border-radius:9px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;font-family:inherit;font-size:12.5px;font-weight:600;color:var(--ink-2);
+  padding:6px 12px;border-radius:7px;cursor:pointer;display:flex;align-items:center;gap:6px}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.seg button svg{width:14px;height:14px}
+
+/* ---- zoom bar ---- */
+.zoombar{position:fixed;bottom:18px;right:18px;z-index:50;background:var(--surface);border:1px solid var(--line);
+  border-radius:12px;box-shadow:var(--shadow);display:flex;align-items:center;gap:2px;padding:5px}
+.zoombar button{width:34px;height:34px;border:0;background:transparent;border-radius:8px;color:var(--ink-2);cursor:pointer;display:grid;place-items:center;font-family:inherit}
+.zoombar button:hover{background:var(--bg)}
+.zoombar button svg{width:17px;height:17px}
+.zlevel{min-width:52px;text-align:center;font-size:12.5px;font-weight:650;color:var(--ink-2);cursor:pointer}
+
+.hint{position:fixed;bottom:18px;left:18px;z-index:50;font-size:11.5px;color:var(--ink-3);
+  background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px;box-shadow:var(--shadow);max-width:280px;line-height:1.5}
+.hint b{color:var(--ink-2)}
+
+.toast{position:fixed;bottom:66px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--ink);color:var(--bg);
+  padding:9px 16px;border-radius:10px;font-size:12.5px;font-weight:600;z-index:120;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* palette picker popover */
+.pop{position:fixed;z-index:60;background:var(--surface);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);
+  padding:10px;display:none;grid-template-columns:repeat(2,1fr);gap:8px;width:300px}
+.pop.open{display:grid}
+.pop .opt{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:9px;cursor:pointer;border:1px solid transparent}
+.pop .opt:hover{background:var(--bg);border-color:var(--line)}
+.pop .opt .sw{width:22px;height:22px;border-radius:6px}
+.pop .opt div{min-width:0}
+.pop .opt .n{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pop .opt .v{font-size:10.5px;color:var(--ink-3)}
+@media(max-width:620px){.toolbar{flex-wrap:wrap;max-width:94vw;justify-content:center}.tb-brand{display:none}.hint{display:none}}
+</style>
+</head>
+<body>
+
+<div class="viewport" id="viewport">
+  <div class="world" id="world"></div>
+</div>
+
+<div class="toolbar">
+  <div class="tb-brand">
+    <div class="tb-mark">◆</div>
+    <div><div class="tb-name">Fashion AI</div><div class="tb-sub">Design canvas</div></div>
+  </div>
+  <div class="seg" id="modeSeg">
+    <button data-mode="arrange" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>Arrange</button>
+    <button data-mode="interact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>Interact</button>
+  </div>
+  <button class="btn primary" id="addBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Add variation</button>
+  <button class="btn" id="fitBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 00-2 2v3M16 3h3a2 2 0 012 2v3M21 16v3a2 2 0 01-2 2h-3M3 16v3a2 2 0 002 2h3"/></svg>Fit all</button>
+</div>
+
+<div class="pop" id="pop"></div>
+
+<div class="zoombar">
+  <button id="zoomOut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg></button>
+  <div class="zlevel" id="zlevel" title="Reset zoom">100%</div>
+  <button id="zoomIn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button>
+</div>
+
+<div class="hint" id="hint"><b>Arrange mode:</b> drag the background to pan · scroll / pinch to zoom · drag a frame's title bar to move it. Switch to <b>Interact</b> to click inside any variation.</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ variation palettes ============ */
+const PALETTES=[
+  {name:"Charcoal",sub:"Neutral · default",color:"#2b2b2e",accent:"#8a6d52",brand:"Your Brand",view:"dashboard"},
+  {name:"Emerald Couture",sub:"Jewel green · gold",color:"#1f5c45",accent:"#c0a062",brand:"Maison Verde",view:"inbox"},
+  {name:"Bordeaux Atelier",sub:"Deep wine · bronze",color:"#6d2230",accent:"#b08d57",brand:"Atelier Rouge",view:"shop"},
+  {name:"Midnight Navy",sub:"Navy · steel",color:"#1e2a44",accent:"#8aa0c6",brand:"Noir & Co",view:"analytics"},
+  {name:"Rose Studio",sub:"Plum · champagne",color:"#8a3d5c",accent:"#caa15a",brand:"Rosé Studio",view:"voice"},
+  {name:"Forest",sub:"Pine · amber",color:"#2f4a37",accent:"#b98a3e",brand:"Evergreen",view:"orders"},
+  {name:"Ink & Gold",sub:"Black · gold",color:"#232323",accent:"#caa054",brand:"Lux Label",view:"workflow"},
+  {name:"Harbor",sub:"Slate blue · tan",color:"#3a4a6b",accent:"#c99a63",brand:"Harbor Line",view:"dashboard"},
+  {name:"Terracotta",sub:"Clay · cream",color:"#9c4a2f",accent:"#8a6d52",brand:"Siena",view:"shop"},
+  {name:"Aubergine",sub:"Purple · rose-gold",color:"#4a2c52",accent:"#c08a82",brand:"Violette",view:"inbox"}
+];
+const FW=1320, FH=840, GAP=90;   // frame size + gap
+
+let frames=[], nextId=1, usedPalettes=0;
+let scale=0.42, tx=160, ty=150, mode="arrange";
+
+const viewport=document.getElementById("viewport");
+const world=document.getElementById("world");
+
+function frameSrc(p){
+  const q=new URLSearchParams({color:p.color,accent:p.accent,brand:p.brand,view:p.view});
+  return "demo.html?"+q.toString();
+}
+function makeFrame(p,x,y){
+  const id="f"+(nextId++);
+  frames.push({id,x,y,w:FW,h:FH,p});
+  const el=document.createElement("div");
+  el.className="frame";el.id=id;
+  el.style.cssText=`left:${x}px;top:${y}px;width:${FW}px;height:${FH}px`;
+  el.innerHTML=`
+    <div class="frame-head" data-drag="${id}">
+      <span class="sw" style="background:${p.color}"></span>
+      <span class="frame-title">${p.brand}</span>
+      <span class="frame-sub">${p.name}</span>
+      <div class="fbtns">
+        <button class="fbtn" title="Duplicate" data-dup="${id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg></button>
+        <button class="fbtn" title="Open full screen" data-open="${id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M10 14 21 3M21 14v7H3V3h7"/></svg></button>
+        <button class="fbtn" title="Remove" data-del="${id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+    </div>
+    <div class="frame-body">
+      <iframe src="${frameSrc(p)}" title="${p.brand}" loading="lazy"></iframe>
+      <div class="frame-overlay"></div>
+    </div>`;
+  world.appendChild(el);
+  return el;
+}
+function applyTransform(){
+  world.style.transform=`translate(${tx}px,${ty}px) scale(${scale})`;
+  document.getElementById("zlevel").textContent=Math.round(scale*100)+"%";
+}
+function layoutGrid(list){ // 2 columns
+  const cols=2;
+  list.forEach((p,i)=>{
+    const x=(i%cols)*(FW+GAP), y=Math.floor(i/cols)*(FH+GAP);
+    makeFrame(p,x,y);
+  });
+  usedPalettes=list.length;
+}
+
+/* ---- zoom / pan ---- */
+function clampScale(s){return Math.min(2,Math.max(0.12,s));}
+function zoomAt(cx,cy,factor){
+  const ns=clampScale(scale*factor);const k=ns/scale;
+  tx=cx-(cx-tx)*k; ty=cy-(cy-ty)*k; scale=ns; applyTransform();
+}
+viewport.addEventListener("wheel",e=>{
+  // in interact mode, let same-origin iframes scroll themselves unless ctrl/pinch
+  const overFrame=e.target.closest(".frame") && mode==="interact" && !e.ctrlKey;
+  if(overFrame)return;
+  e.preventDefault();
+  if(e.ctrlKey||e.metaKey){ zoomAt(e.clientX,e.clientY, e.deltaY<0?1.12:0.89); }
+  else { tx-=e.deltaX; ty-=e.deltaY; applyTransform(); }
+},{passive:false});
+
+document.getElementById("zoomIn").onclick=()=>zoomAt(innerWidth/2,innerHeight/2,1.2);
+document.getElementById("zoomOut").onclick=()=>zoomAt(innerWidth/2,innerHeight/2,0.83);
+document.getElementById("zlevel").onclick=()=>{scale=1;applyTransform();};
+
+function fitAll(){
+  if(!frames.length)return;
+  let minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9;
+  frames.forEach(f=>{minX=Math.min(minX,f.x);minY=Math.min(minY,f.y);maxX=Math.max(maxX,f.x+f.w);maxY=Math.max(maxY,f.y+f.h);});
+  const pad=90,w=maxX-minX+pad*2,h=maxY-minY+pad*2;
+  const topUI=90;
+  scale=clampScale(Math.min(innerWidth/w,(innerHeight-topUI)/h));
+  tx=(innerWidth-(maxX+minX)*scale)/2;
+  ty=topUI+((innerHeight-topUI)-(maxY-minY)*scale)/2 - minY*scale;
+  applyTransform();
+}
+document.getElementById("fitBtn").onclick=fitAll;
+
+/* ---- pan background ---- */
+let panning=false,panSX,panSY,panTX,panTY;
+viewport.addEventListener("pointerdown",e=>{
+  if(e.target.closest(".frame-head")||e.target.closest(".fbtn"))return;
+  if(mode==="interact" && e.target.closest(".frame"))return;
+  panning=true;panSX=e.clientX;panSY=e.clientY;panTX=tx;panTY=ty;
+  viewport.classList.add("panning");viewport.setPointerCapture(e.pointerId);
+});
+viewport.addEventListener("pointermove",e=>{
+  if(!panning)return;
+  tx=panTX+(e.clientX-panSX);ty=panTY+(e.clientY-panSY);applyTransform();
+});
+viewport.addEventListener("pointerup",e=>{panning=false;viewport.classList.remove("panning");});
+viewport.addEventListener("pointercancel",()=>{panning=false;viewport.classList.remove("panning");});
+
+/* ---- drag frames (by header) ---- */
+let drag=null;
+world.addEventListener("pointerdown",e=>{
+  const h=e.target.closest(".frame-head");if(!h)return;
+  if(e.target.closest(".fbtn"))return;
+  const id=h.dataset.drag,f=frames.find(x=>x.id===id),el=document.getElementById(id);
+  el.classList.add("dragging");
+  world.appendChild(el); // bring to front
+  drag={f,el,sx:e.clientX,sy:e.clientY,ox:f.x,oy:f.y};
+  h.setPointerCapture(e.pointerId);e.stopPropagation();
+});
+world.addEventListener("pointermove",e=>{
+  if(!drag)return;
+  drag.f.x=drag.ox+(e.clientX-drag.sx)/scale;
+  drag.f.y=drag.oy+(e.clientY-drag.sy)/scale;
+  drag.el.style.left=drag.f.x+"px";drag.el.style.top=drag.f.y+"px";
+});
+world.addEventListener("pointerup",e=>{if(drag){drag.el.classList.remove("dragging");drag=null;}});
+
+/* ---- frame buttons ---- */
+world.addEventListener("click",e=>{
+  const dup=e.target.closest("[data-dup]"),del=e.target.closest("[data-del]"),op=e.target.closest("[data-open]");
+  if(dup){const f=frames.find(x=>x.id===dup.dataset.dup);const el=makeFrame(f.p,f.x+60,f.y+60);fitNudge(el);toast("Duplicated “"+f.p.brand+"”");}
+  if(del){const id=del.dataset.del;document.getElementById(id).remove();frames=frames.filter(x=>x.id!==id);toast("Removed");}
+  if(op){const f=frames.find(x=>x.id===op.dataset.open);window.open(frameSrc(f.p),"_blank");}
+});
+function fitNudge(el){} // placeholder (frame already placed)
+
+/* ---- add variation (palette popover) ---- */
+const pop=document.getElementById("pop");
+document.getElementById("addBtn").onclick=e=>{
+  pop.innerHTML=PALETTES.map((p,i)=>`<div class="opt" data-pi="${i}">
+    <span class="sw" style="background:${p.color}"></span>
+    <div><div class="n">${p.name}</div><div class="v">${p.sub}</div></div></div>`).join("")
+    +`<div class="opt" data-random="1" style="grid-column:span 2;justify-content:center">
+      <svg viewBox="0 0 24 24" width="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+      <div class="n">Surprise me — random palette</div></div>`;
+  const r=e.currentTarget.getBoundingClientRect();
+  pop.style.left=Math.min(r.left,innerWidth-320)+"px";pop.style.top=(r.bottom+8)+"px";
+  pop.classList.add("open");e.stopPropagation();
+};
+pop.addEventListener("click",e=>{
+  const opt=e.target.closest(".opt");if(!opt)return;
+  let p;
+  if(opt.dataset.random){
+    const base=PALETTES[Math.floor(Math.random()*PALETTES.length)];
+    p={...base,view:["dashboard","inbox","orders","shop","voice","analytics","workflow"][Math.floor(Math.random()*7)]};
+  } else { p=PALETTES[+opt.dataset.pi]; }
+  // place at a sensible open spot (next grid cell)
+  const col=frames.length%2, row=Math.floor(frames.length/2);
+  const el=makeFrame(p,col*(FW+GAP),row*(FH+GAP));
+  pop.classList.remove("open");
+  toast("Added “"+p.brand+"” · "+p.name);
+  setTimeout(fitAll,30);
+});
+document.addEventListener("click",e=>{if(!pop.contains(e.target)&&e.target.id!=="addBtn")pop.classList.remove("open");});
+
+/* ---- mode toggle ---- */
+document.getElementById("modeSeg").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  mode=b.dataset.mode;
+  document.querySelectorAll("#modeSeg button").forEach(x=>x.classList.toggle("on",x===b));
+  viewport.classList.toggle("interact",mode==="interact");
+  document.getElementById("hint").innerHTML = mode==="interact"
+    ? "<b>Interact mode:</b> click, type and explore inside any variation. Pan by dragging empty space. Switch to <b>Arrange</b> to move frames."
+    : "<b>Arrange mode:</b> drag the background to pan · scroll / pinch to zoom · drag a frame's title bar to move it. Switch to <b>Interact</b> to click inside any variation.";
+});
+
+function toast(t){const el=document.getElementById("toast");el.textContent=t;el.classList.add("show");
+  clearTimeout(window._t);window._t=setTimeout(()=>el.classList.remove("show"),2000);}
+
+/* ---- init ---- */
+layoutGrid(PALETTES.slice(0,4));
+applyTransform();
+window.addEventListener("load",()=>setTimeout(fitAll,120));
+window.addEventListener("resize",()=>{});
+</script>
+</body>
+</html>
