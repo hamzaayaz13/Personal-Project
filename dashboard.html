@@ -24,7 +24,7 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
-body{font-family:var(--font);color:var(--ink);background:var(--bg);font-size:15px;-webkit-font-smoothing:antialiased}
+body{font-family:var(--font);color:var(--ink);background:var(--bg);font-size:15px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.02em}
 button{font-family:inherit;cursor:pointer}
 input,select{font-family:inherit}
@@ -51,7 +51,7 @@ a{color:var(--blue);text-decoration:none}
 .sidebar .foot{padding:12px 16px;border-top:.5px solid var(--hair);font-size:12px;color:var(--ink3);font-weight:500;display:flex;align-items:center;gap:6px}
 .sidebar .foot .dot{width:7px;height:7px;border-radius:50%;background:var(--orange)}
 
-.main{min-width:0;display:flex;flex-direction:column}
+.main{min-width:0;display:flex;flex-direction:column;overflow-x:hidden}
 .top{position:sticky;top:0;z-index:20;background:rgba(242,242,247,.82);backdrop-filter:blur(20px);border-bottom:.5px solid var(--hair);
   display:flex;align-items:center;gap:14px;padding:14px 28px}
 .top h1{font-size:24px}
@@ -123,20 +123,32 @@ select.fld,input.fld{border:1px solid var(--line);background:var(--card);border-
 /* globe */
 .scene{position:relative;width:100%;height:440px;perspective:1150px;overflow:hidden}
 .tilt{position:absolute;left:50%;top:52%;width:0;height:0;transform-style:preserve-3d;transform:translate(-50%,-50%) rotateX(-18deg)}
-.disc{position:absolute;left:0;top:0;width:420px;height:420px;margin:-210px 0 0 -210px;border-radius:50%;
-  background:radial-gradient(circle at 38% 30%,#eef6ff,#d3e5f8 46%,#b2cfec 78%,#9dc2e6);
-  box-shadow:inset -26px -22px 54px rgba(40,75,120,.3),0 24px 64px rgba(40,70,110,.16)}
+.disc{position:absolute;left:0;top:0;width:430px;height:430px;margin:-215px 0 0 -215px;border-radius:50%;
+  background:radial-gradient(circle at 40% 34%,#d8e8fa 0%,#bfd9f2 46%,#a6c9ea 72%,rgba(166,201,234,0) 100%);
+  box-shadow:0 20px 70px rgba(70,110,160,.13)}
 .sphere{position:absolute;left:0;top:0;width:0;height:0;transform-style:preserve-3d;animation:spin 60s linear infinite}
 .sphere.paused{animation-play-state:paused}
-.pt{position:absolute;left:0;top:0;width:4px;height:4px;margin:-2px;border-radius:50%;background:#3f86cf;opacity:.85}
+.pt{position:absolute;left:0;top:0;width:4px;height:4px;margin:-2px;border-radius:50%;background:#ffffff;opacity:.92}
 .gmk{position:absolute;left:0;top:0;cursor:pointer}
 .gmk .co{position:absolute;left:-5px;top:-5px;width:10px;height:10px;border-radius:50%;background:var(--pink);box-shadow:0 0 10px 2px rgba(255,55,95,.9);border:1.5px solid #fff}
 .gmk .rg{position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;background:rgba(255,55,95,.45);animation:pulse 2.4s ease-out infinite}
 .gmk.sel .co{background:#0a84ff;box-shadow:0 0 12px 3px rgba(10,132,255,.9)}
-.sheen{position:absolute;left:50%;top:52%;width:420px;height:420px;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
-  background:radial-gradient(circle at 36% 27%,rgba(255,255,255,.5),transparent 42%),radial-gradient(circle at 72% 76%,rgba(25,55,100,.24),transparent 55%)}
+.sheen{position:absolute;left:50%;top:52%;width:430px;height:430px;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle at 38% 30%,rgba(255,255,255,.5),transparent 46%)}
 @keyframes spin{to{transform:rotateY(360deg)}}
 @keyframes pulse{0%{transform:scale(1);opacity:.55}70%{transform:scale(2.6);opacity:0}100%{opacity:0}}
+/* overview hero: cards left, globe bleeds right & blends into background */
+.ovhero{position:relative;min-height:506px;margin-bottom:16px}
+.ovscene{position:absolute;right:-180px;top:-24px;width:700px;height:560px;perspective:1250px;z-index:1;cursor:grab}
+.ovleft{position:relative;z-index:2;width:476px;max-width:100%}
+.kpis2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ctry-row{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;padding:9px 8px;border-radius:10px;text-align:left;cursor:pointer}
+.ctry-row:hover{background:var(--fill)}
+.ctry-row.on{background:rgba(0,122,255,.1)}
+.ctry-row .nm{font-size:13.5px;font-weight:500;flex:1;color:var(--ink)}
+.ctry-row .bar{width:84px}
+.ctry-row .ct{font-weight:700;font-size:13px;width:30px;text-align:right}
+@media(max-width:1040px){.ovscene{position:relative;right:auto;top:auto;width:100%;height:340px;margin-top:12px}.ovleft{width:100%}.ovhero{min-height:0}}
 
 /* bars */
 .bar{height:8px;border-radius:20px;background:#eef0f3;overflow:hidden}
@@ -447,49 +459,60 @@ function go(v){cur=v;$('#pageTitle').textContent=TITLES[v];
 const VIEWS={},AFTER={};
 
 /* =============== OVERVIEW =============== */
-let selCode='PK';
-VIEWS.overview=()=>{
-  return `
-  <div class="kpis" style="margin-bottom:16px">
-    ${kpi('Active orders',M.active,'+14 this month','g')}
-    ${kpi('Due this week',M.dueWeek,'across 6 stages','n')}
-    ${kpi('On-time delivery',M.onTime+'%','last 90 days · sample','g')}
-    ${kpi('Delayed orders',M.delayed,'needs attention','r')}
-  </div>
-  <div class="grid" style="grid-template-columns:1.55fr 1fr;align-items:start">
-    <div class="card">
-      <div class="hd"><h3>Global order activity</h3><span class="pill teal"><span></span>${M.active} orders · 7 countries</span></div>
-      <div class="scene" id="scene"></div>
-      <div style="padding:4px 16px 16px;display:flex;gap:8px;flex-wrap:wrap" id="ctryChips"></div>
+let selCode='PK', globeSpinning=true;
+VIEWS.overview=()=>`
+  <div class="ovhero">
+    <div class="ovscene" id="scene"></div>
+    <div class="ovleft">
+      <div style="display:flex;align-items:center;gap:10px;margin:2px 0 14px">
+        <h2 style="font-size:22px">Live overview</h2>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink3);font-weight:500"><span style="width:8px;height:8px;border-radius:50%;background:var(--green)"></span>Live · just now</span>
+      </div>
+      <div class="kpis2">
+        ${kpi('Active orders',M.active,'+14 this month','g')}
+        ${kpi('Due this week',M.dueWeek,'across 6 stages','n')}
+        ${kpi('On-time delivery',M.onTime+'%','90 days · sample','g')}
+        ${kpi('Delayed',M.delayed,'needs attention','r')}
+      </div>
+      <div class="card" style="margin-top:14px">
+        <div class="hd"><h3>Orders by destination</h3><span class="muted tiny">tap a row to focus the globe</span></div>
+        <div id="ctryList" style="padding:2px 12px 4px"></div>
+        <div id="ctryDetail" style="padding:0 18px 16px"></div>
+      </div>
     </div>
-    <div id="ctryPanel"></div>
   </div>
-  <div class="card" style="margin-top:16px">
+  <div class="card">
     <div class="hd"><h3>Orders requiring attention</h3><button class="btn sm" onclick="go('exceptions')">View all exceptions</button></div>
     <div id="attn"></div>
   </div>`;
-};
 function kpi(l,v,d,c){return `<div class="kpi"><div class="lb">${l}</div><div class="vl">${v}</div><div class="dl ${c}">${d}</div></div>`}
-AFTER.overview=()=>{buildGlobe($('#scene'));renderCtryChips();selectCountry(selCode);renderAttn()};
-function renderCtryChips(){
-  $('#ctryChips').innerHTML=COUNTRIES.map(c=>`<button class="chipf" data-c="${c.code}" style="cursor:pointer">${flag(c.code)} ${c.name} · <b>${c.count}</b></button>`).join('');
-  $('#ctryChips').querySelectorAll('button').forEach(b=>b.onclick=()=>selectCountry(b.dataset.c));
+AFTER.overview=()=>{buildGlobe($('#scene'));renderCtryList();selectCountry(selCode,false);renderAttn();$('#scene').onclick=()=>resumeSpin()};
+function renderCtryList(){
+  $('#ctryList').innerHTML=COUNTRIES.map(c=>{const del=ordersByCode(c.code).filter(o=>o.delayed).length;
+    return `<button class="ctry-row ${c.code===selCode?'on':''}" data-c="${c.code}">
+      <span style="font-size:15px">${flag(c.code)}</span><span class="nm">${c.name}</span>
+      <span class="bar"><i style="width:${c.count/96*100}%;background:${del?'var(--orange)':'var(--blue)'}"></i></span>
+      <span class="ct">${c.count}</span></button>`}).join('');
+  $('#ctryList').querySelectorAll('.ctry-row').forEach(b=>b.onclick=()=>selectCountry(b.dataset.c,true));
 }
-function selectCountry(code){
+function selectCountry(code,focus){
   selCode=code;const c=countryByCode(code);const os=ordersByCode(code);
   const dist=STAGES.map(s=>({name:s.name,n:os.filter(o=>o.stage===s.key).length}));
   const del=os.filter(o=>o.delayed).length;
   document.querySelectorAll('#scene .gmk').forEach(m=>m.classList.toggle('sel',m.dataset.c===code));
-  $('#ctryPanel').innerHTML=`<div class="card"><div class="hd"><h3>${flag(code)} ${c.name}</h3><span class="pill blue"><span></span>${c.count} active</span></div>
-    <div style="padding:4px 20px 16px">
-      <div class="row2"><span class="l">Active orders</span><b>${c.count}</b></div>
-      <div class="row2"><span class="l">Delayed</span><b style="color:${del?'var(--red-d)':'var(--ink)'}">${del}</b></div>
-      <div class="row2"><span class="l">Share of total</span><b>${Math.round(c.count/248*100)}%</b></div>
-      <h4 style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);margin:16px 0 10px">Stage distribution</h4>
-      ${dist.map(d=>`<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span class="muted">${d.name}</span><b>${d.n}</b></div><div class="bar"><i style="width:${c.count?d.n/c.count*100:0}%"></i></div></div>`).join('')}
-      <button class="btn tint" style="width:100%;margin-top:14px;justify-content:center" onclick="openOrders('${code}')">View ${c.name} orders</button>
-    </div></div>`;
+  document.querySelectorAll('#ctryList .ctry-row').forEach(b=>b.classList.toggle('on',b.dataset.c===code));
+  if(focus)faceCountry(c.lon);
+  $('#ctryDetail').innerHTML=`<div style="border-top:.5px solid var(--line2);padding-top:12px;margin-top:2px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div style="font-weight:700;font-size:15px">${flag(code)} ${c.name}</div><span class="pill ${del?'red':'green'}"><span></span>${del} delayed</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px 18px;margin-bottom:4px">
+      ${dist.map(d=>`<div style="display:flex;justify-content:space-between;font-size:12.5px"><span class="muted">${d.name}</span><b>${d.n}</b></div>`).join('')}
+    </div>
+    <button class="btn tint sm" style="width:100%;justify-content:center;margin-top:10px" onclick="openOrders('${code}')">View ${c.count} ${c.name} orders</button>
+    ${focus?'<div class="tiny muted" style="text-align:center;margin-top:8px">Click the globe to resume rotation</div>':''}</div>`;
 }
+function faceCountry(lon){const s=$('#sphere');if(!s)return;globeSpinning=false;
+  s.style.animation='none';void s.offsetWidth;s.style.transition='transform 1.1s cubic-bezier(.4,0,.2,1)';s.style.transform=`rotateY(${-lon}deg)`}
+function resumeSpin(){const s=$('#sphere');if(!s||globeSpinning)return;globeSpinning=true;s.style.transition='none';s.style.transform='';void s.offsetWidth;s.style.animation=''}
 function renderAttn(){
   const rows=[...ORDERS.filter(o=>o.delayed),...ORDERS.filter(o=>o.dueThisWeek&&o.si<=1&&!o.delayed).slice(0,4),...ORDERS.filter(o=>o.updatedAgo>=8&&!o.delayed).slice(0,3)].slice(0,9);
   $('#attn').innerHTML=`<table class="tbl"><thead><tr><th class="no">Order</th><th class="no">Client</th><th class="no">Garment</th><th class="no">Issue</th><th class="no">Stage</th><th class="no">Due</th><th class="no"></th></tr></thead><tbody>${rows.map(o=>{
@@ -500,15 +523,17 @@ function renderAttn(){
 
 /* ---- globe ---- */
 function buildGlobe(scene){
-  const R=170;
+  const R=205;
   const E=[[-100,45,30,22],[-88,58,30,13],[-90,22,12,11],[-60,-20,18,27],[-66,3,12,10],[18,3,22,30],[16,27,25,12],[16,53,22,11],[92,47,46,24],[82,20,22,16],[48,27,14,12],[134,-26,16,11],[-42,72,12,8]];
   const land=(lon,lat)=>E.some(([cx,cy,a,b])=>{const dx=(lon-cx)/a,dy=(lat-cy)/b;return dx*dx+dy*dy<=1});
   let dots='';
-  for(let lat=-84;lat<=84;lat+=6)for(let lon=-180;lon<180;lon+=6)if(land(lon,lat))
+  for(let lat=-84;lat<=84;lat+=5)for(let lon=-180;lon<180;lon+=5)if(land(lon,lat))
     dots+=`<span class="pt" style="transform:rotateY(${lon}deg) rotateX(${-lat}deg) translateZ(${R}px)"></span>`;
-  const marks=COUNTRIES.map((c,i)=>`<span class="gmk" data-c="${c.code}" style="transform:rotateY(${c.lon}deg) rotateX(${-c.lat}deg) translateZ(${R+3}px)"><span class="rg" style="animation-delay:${i*0.35}s"></span><span class="co"></span></span>`).join('');
+  const maxC=Math.max(...COUNTRIES.map(c=>c.count));
+  const marks=COUNTRIES.map((c,i)=>{const s=7+(c.count-7)/(maxC-7)*12, r=s*1.9;    // marker size ∝ order count
+    return `<span class="gmk" data-c="${c.code}" style="transform:rotateY(${c.lon}deg) rotateX(${-c.lat}deg) translateZ(${R+2}px)"><span class="rg" style="width:${r}px;height:${r}px;left:${-r/2}px;top:${-r/2}px;animation-delay:${i*0.35}s"></span><span class="co" style="width:${s}px;height:${s}px;left:${-s/2}px;top:${-s/2}px"></span></span>`}).join('');
   scene.innerHTML=`<div class="tilt"><div class="disc"></div><div class="sphere" id="sphere">${dots}${marks}</div></div><div class="sheen"></div>`;
-  scene.querySelectorAll('.gmk').forEach(m=>m.onclick=e=>{e.stopPropagation();selectCountry(m.dataset.c)});
+  scene.querySelectorAll('.gmk').forEach(m=>m.onclick=e=>{e.stopPropagation();selectCountry(m.dataset.c,true)});
 }
 
 /* =============== ORDERS =============== */
