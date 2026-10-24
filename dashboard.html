@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atelier OMS — Order Management Demo</title>
+<style>
+/* ===== iOS / Apple HIG design system (brand-neutral, swappable) ===== */
+:root{
+  --ink:#1c1c1e;--ink2:#3c3c43;--ink3:#8e8e93;--ink4:#aeaeb2;
+  --bg:#f2f2f7;--panel:#fbfbfd;--card:#ffffff;--line:#e3e3e8;--line2:#ececef;--hair:#d6d6da;
+  --blue:#007aff;--blue-d:#0063cc;--blue-s:#e6f0ff;
+  --green:#34c759;--green-d:#1e8e3e;--green-s:#e4f7ea;
+  --red:#ff3b30;--red-d:#d70015;--red-s:#ffe9e7;
+  --orange:#ff9500;--orange-d:#b25e00;--orange-s:#fff0df;
+  --purple:#af52de;--purple-d:#8944ab;--purple-s:#f0e9fb;
+  --teal:#30b0c7;--teal-s:#e2f4f7;
+  --pink:#ff375f;
+  --gray-s:#ececef;--gray-d:#5a5a5f;
+  --fill:#f2f2f7;--fill2:#e9e9ee;
+  --r:16px;--r2:12px;--r3:10px;
+  --sh:0 1px 3px rgba(0,0,0,.05);--sh2:0 12px 40px rgba(20,20,30,.16);
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:var(--font);color:var(--ink);background:var(--bg);font-size:15px;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.02em}
+button{font-family:inherit;cursor:pointer}
+input,select{font-family:inherit}
+a{color:var(--blue);text-decoration:none}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:#cdcdd3;border-radius:20px;border:3px solid transparent;background-clip:content-box}
+
+/* shell */
+.app{display:grid;grid-template-columns:252px 1fr;min-height:100vh}
+.sidebar{background:var(--panel);border-right:.5px solid var(--hair);position:sticky;top:0;height:100vh;display:flex;flex-direction:column}
+.brand{display:flex;align-items:center;gap:11px;padding:20px 18px 12px}
+.brand .mk{width:34px;height:34px;border-radius:9px;background:var(--brandmk,#1c1c1e);color:#fff;display:grid;place-items:center;font-size:15px;font-weight:600;flex:none}
+.brand .nm{font-weight:700;font-size:16px}.brand .sb{font-size:12px;color:var(--ink3)}
+.nav{padding:6px 12px;flex:1;overflow-y:auto}
+.nav .sec{font-size:12px;color:var(--ink3);padding:12px 12px 5px;font-weight:600}
+.nav button{display:flex;align-items:center;gap:12px;width:100%;border:0;background:transparent;padding:9px 12px;border-radius:10px;
+  font-size:15px;color:var(--ink);text-align:left;margin-bottom:2px;font-weight:500}
+.nav button:hover{background:var(--fill2)}
+.nav button.on{background:rgba(0,122,255,.12);font-weight:600}
+.nav button.on svg{color:var(--blue)}
+.nav button svg{width:19px;height:19px;color:var(--ink3);flex:none}
+.nav .ct{margin-left:auto;font-size:12px;font-weight:600;border-radius:20px;padding:1px 8px;min-width:20px;text-align:center;background:var(--ink3);color:#fff}
+.nav .ct.red{background:var(--red)}
+.sidebar .foot{padding:12px 16px;border-top:.5px solid var(--hair);font-size:12px;color:var(--ink3);font-weight:500;display:flex;align-items:center;gap:6px}
+.sidebar .foot .dot{width:7px;height:7px;border-radius:50%;background:var(--orange)}
+
+.main{min-width:0;display:flex;flex-direction:column}
+.top{position:sticky;top:0;z-index:20;background:rgba(242,242,247,.82);backdrop-filter:blur(20px);border-bottom:.5px solid var(--hair);
+  display:flex;align-items:center;gap:14px;padding:14px 28px}
+.top h1{font-size:24px}
+.top .right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.srch{position:relative}
+.srch input{width:230px;border:0;background:var(--fill2);border-radius:10px;padding:9px 12px 9px 32px;font-size:14px;color:var(--ink)}
+.srch svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--ink3)}
+.envb{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--orange-d);background:var(--orange-s);border:1px solid #f0d9b0;padding:5px 10px;border-radius:20px}
+.envb .d{width:6px;height:6px;border-radius:50%;background:var(--orange);animation:pz 2s infinite}
+@keyframes pz{0%,100%{opacity:1}50%{opacity:.35}}
+.wrap{padding:24px 28px;max-width:1400px;width:100%}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 14px;border-radius:11px;font-size:14px;font-weight:600}
+.btn:hover{background:var(--fill)}
+.btn.pri{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn.pri:hover{filter:brightness(.95)}
+.btn.sm{padding:6px 11px;font-size:13px;border-radius:9px}
+.btn.tint{background:var(--blue-s);color:var(--blue-d);border:0}
+.btn svg{width:15px;height:15px}
+.ib{width:32px;height:32px;border-radius:9px;background:var(--fill);border:0;display:grid;place-items:center}
+.ib:hover{background:var(--fill2)}.ib svg{width:16px;height:16px;color:var(--ink2)}
+
+/* cards */
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh)}
+.card .hd{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 14px}
+.card .hd h3{font-size:18px}
+.grid{display:grid;gap:16px}
+.muted{color:var(--ink3)}.tiny{font-size:12px}
+
+/* kpi */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.kpi{background:var(--card);border-radius:18px;padding:17px 18px;box-shadow:var(--sh)}
+.kpi .lb{font-size:13px;color:var(--ink3);font-weight:500}
+.kpi .vl{font-size:30px;font-weight:700;letter-spacing:-.03em;margin-top:6px}
+.kpi .dl{font-size:13px;font-weight:600;margin-top:4px}
+.kpi .dl.g{color:var(--green-d)}.kpi .dl.r{color:var(--red)}.kpi .dl.n{color:var(--ink3)}
+
+/* pills */
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;white-space:nowrap}
+.pill.blue{background:var(--blue-s);color:var(--blue-d)}
+.pill.green{background:var(--green-s);color:var(--green-d)}
+.pill.red{background:var(--red-s);color:var(--red-d)}
+.pill.orange{background:var(--orange-s);color:var(--orange-d)}
+.pill.purple{background:var(--purple-s);color:var(--purple-d)}
+.pill.gray{background:var(--gray-s);color:var(--gray-d)}
+.pill.teal{background:var(--teal-s);color:#1f7f90}
+
+/* table */
+.tbl{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.tbl th{text-align:left;font-size:12px;font-weight:600;color:var(--ink3);padding:9px 16px;border-top:.5px solid var(--line2);border-bottom:.5px solid var(--line2);white-space:nowrap;cursor:pointer;user-select:none}
+.tbl th.no{cursor:default}
+.tbl th .ar{opacity:.5;font-size:10px}
+.tbl td{padding:12px 16px;border-bottom:.5px solid var(--line2);font-size:14px;vertical-align:middle}
+.tbl tbody tr{cursor:pointer}
+.tbl tbody tr:hover{background:var(--fill)}
+.ava{width:30px;height:30px;border-radius:50%;background:var(--fill2);color:var(--gray-d);display:grid;place-items:center;font-weight:600;font-size:12px;flex:none}
+.cell-c{display:flex;align-items:center;gap:9px}
+.num{color:var(--ink2)}
+
+/* toolbar (filters) */
+.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.seg{display:flex;background:var(--fill2);border-radius:9px;padding:2px}
+.seg button{border:0;background:transparent;font-size:13px;font-weight:500;color:var(--gray-d);padding:6px 13px;border-radius:7px}
+.seg button.on{background:var(--card);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+select.fld,input.fld{border:1px solid var(--line);background:var(--card);border-radius:9px;padding:8px 11px;font-size:13.5px;color:var(--ink)}
+.chipf{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);border-radius:20px;padding:7px 13px;font-size:13px;font-weight:500;color:var(--ink2)}
+
+/* globe */
+.scene{position:relative;width:100%;height:440px;perspective:1150px;overflow:hidden}
+.tilt{position:absolute;left:50%;top:52%;width:0;height:0;transform-style:preserve-3d;transform:translate(-50%,-50%) rotateX(-18deg)}
+.disc{position:absolute;left:0;top:0;width:420px;height:420px;margin:-210px 0 0 -210px;border-radius:50%;
+  background:radial-gradient(circle at 38% 30%,#eef6ff,#d3e5f8 46%,#b2cfec 78%,#9dc2e6);
+  box-shadow:inset -26px -22px 54px rgba(40,75,120,.3),0 24px 64px rgba(40,70,110,.16)}
+.sphere{position:absolute;left:0;top:0;width:0;height:0;transform-style:preserve-3d;animation:spin 60s linear infinite}
+.sphere.paused{animation-play-state:paused}
+.pt{position:absolute;left:0;top:0;width:4px;height:4px;margin:-2px;border-radius:50%;background:#3f86cf;opacity:.85}
+.gmk{position:absolute;left:0;top:0;cursor:pointer}
+.gmk .co{position:absolute;left:-5px;top:-5px;width:10px;height:10px;border-radius:50%;background:var(--pink);box-shadow:0 0 10px 2px rgba(255,55,95,.9);border:1.5px solid #fff}
+.gmk .rg{position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;background:rgba(255,55,95,.45);animation:pulse 2.4s ease-out infinite}
+.gmk.sel .co{background:#0a84ff;box-shadow:0 0 12px 3px rgba(10,132,255,.9)}
+.sheen{position:absolute;left:50%;top:52%;width:420px;height:420px;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle at 36% 27%,rgba(255,255,255,.5),transparent 42%),radial-gradient(circle at 72% 76%,rgba(25,55,100,.24),transparent 55%)}
+@keyframes spin{to{transform:rotateY(360deg)}}
+@keyframes pulse{0%{transform:scale(1);opacity:.55}70%{transform:scale(2.6);opacity:0}100%{opacity:0}}
+
+/* bars */
+.bar{height:8px;border-radius:20px;background:#eef0f3;overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:20px;background:var(--blue)}
+.stage-col{background:var(--card);border-radius:14px;box-shadow:var(--sh);overflow:hidden}
+.stage-col .sh{padding:14px 16px;border-bottom:.5px solid var(--line2)}
+
+/* drawer */
+.ov{position:fixed;inset:0;background:rgba(20,18,25,.4);backdrop-filter:blur(2px);z-index:90;opacity:0;pointer-events:none;transition:opacity .2s}
+.ov.on{opacity:1;pointer-events:auto}
+.dw{position:fixed;top:0;right:0;height:100vh;width:520px;max-width:96vw;background:var(--bg);box-shadow:var(--sh2);z-index:91;
+  transform:translateX(100%);transition:transform .26s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+.dw.on{transform:none}
+.dw .dh{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:.5px solid var(--hair);background:var(--card)}
+.dw .db{overflow-y:auto;padding:20px 22px;flex:1}
+.sect{margin-bottom:22px}
+.sect h4{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);margin-bottom:10px}
+.row2{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:8px 0;border-bottom:.5px solid var(--line2)}
+.row2 .l{color:var(--ink3)}
+.tl{list-style:none;margin:0;padding:0}
+.tl li{position:relative;padding:0 0 16px 24px}
+.tl li:before{content:"";position:absolute;left:4px;top:3px;width:11px;height:11px;border-radius:50%;background:var(--card);border:2px solid var(--line)}
+.tl li:after{content:"";position:absolute;left:9px;top:14px;bottom:0;width:2px;background:var(--line2)}
+.tl li:last-child:after{display:none}
+.tl li.done:before{background:var(--green);border-color:var(--green)}
+.tl li.cur:before{background:var(--blue);border-color:var(--blue);box-shadow:0 0 0 4px rgba(0,122,255,.15)}
+.tl li.pend{opacity:.5}
+
+/* tracking public */
+.pub{max-width:640px;margin:0 auto}
+.stepper{display:flex;flex-direction:column;gap:2px}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:12px;
+  font-size:14px;font-weight:600;z-index:120;opacity:0;transition:opacity .2s,transform .2s;box-shadow:var(--sh2)}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.empty{padding:40px;text-align:center;color:var(--ink3)}
+.chartwrap{padding:14px 18px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}.legend i{width:10px;height:10px;border-radius:3px}
+
+@media(max-width:1000px){.kpis{grid-template-columns:repeat(2,1fr)}.app{grid-template-columns:1fr}.sidebar{position:fixed;z-index:100;transform:translateX(-100%);transition:transform .2s}.sidebar.open{transform:none}}
+.toggle{width:44px;height:26px;border-radius:20px;background:var(--line);border:0;position:relative;flex:none;transition:background .15s}
+.toggle:after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .15s}
+.toggle.on{background:var(--green)}.toggle.on:after{left:20px}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 0;border-bottom:.5px solid var(--line2)}
+.set-row:last-child{border:0}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><div class="mk" id="brandMk">A</div><div><div class="nm" id="brandNm">Atelier</div><div class="sb">Order Management</div></div></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="foot"><span class="dot"></span>Demo data · simulated integrations</div>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <h1 id="pageTitle">Overview</h1>
+      <div class="right">
+        <div class="srch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg><input id="gsearch" placeholder="Search orders, customers…"></div>
+        <span class="envb"><span class="d"></span>DEMO DATA</span>
+      </div>
+    </header>
+    <div class="wrap" id="view"></div>
+  </div>
+</div>
+
+<div class="ov" id="ov"></div>
+<aside class="dw" id="dw"><div class="dh"><h2 id="dwTitle" style="font-size:18px"></h2><button class="ib" id="dwClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div><div class="db" id="dwBody"></div></aside>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================================
+   SHARED DEMO DATASET  (single mock "API" — all tabs read from DATA)
+   Clearly simulated. Not representative of real business performance.
+   ========================================================================= */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const rng=mulberry32(20261024);
+const ri=n=>Math.floor(rng()*n), rpick=a=>a[ri(a.length)];
+const TODAY=new Date('2026-10-24T09:00:00');
+const dayMs=86400000;
+const addDays=(d,n)=>new Date(d.getTime()+n*dayMs);
+const fmtD=d=>d.toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'});
+const fmtDS=d=>d.toLocaleDateString('en-US',{day:'numeric',month:'short'});
+const fmtDT=d=>d.toLocaleDateString('en-US',{day:'numeric',month:'short'})+' · '+d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+const daysBetween=(a,b)=>Math.round((b-a)/dayMs);
+const money=n=>'$'+Number(n).toLocaleString();
+
+const COUNTRIES=[
+  {code:'PK',name:'Pakistan',count:96,lon:69,lat:30},
+  {code:'GB',name:'United Kingdom',count:54,lon:-1,lat:54},
+  {code:'US',name:'United States',count:38,lon:-98,lat:39},
+  {code:'AE',name:'United Arab Emirates',count:26,lon:54,lat:24},
+  {code:'SA',name:'Saudi Arabia',count:18,lon:45,lat:24},
+  {code:'CA',name:'Canada',count:9,lon:-106,lat:56},
+  {code:'AU',name:'Australia',count:7,lon:134,lat:-25}
+];
+const STAGES=[
+  {key:'pattern',name:'Pattern Making',count:32,delayed:3,target:3,avg:2.7,team:'Pattern Studio'},
+  {key:'cutting',name:'Cutting',count:28,delayed:1,target:2,avg:2.1,team:'Cutting Floor'},
+  {key:'stitching',name:'Stitching',count:64,delayed:4,target:10,avg:11.2,team:'Atelier · Stitching'},
+  {key:'embellish',name:'Embellishment',count:48,delayed:3,target:12,avg:12.6,team:'Embroidery Unit'},
+  {key:'refine',name:'Refinements',count:34,delayed:1,target:3,avg:2.8,team:'Finishing'},
+  {key:'qa',name:'Quality Assurance',count:42,delayed:0,target:2,avg:1.6,team:'QA Team'}
+];
+const STAGE_ORDER=STAGES.map(s=>s.key);
+const stageIndex=k=>STAGE_ORDER.indexOf(k);
+const TEAMS=[
+  {name:'Pattern Studio',focus:'Pattern making & drafting',members:4},
+  {name:'Cutting Floor',focus:'Fabric cutting & marking',members:3},
+  {name:'Atelier · Stitching',focus:'Construction & assembly',members:9},
+  {name:'Embroidery Unit',focus:'Hand & machine embellishment',members:7},
+  {name:'Finishing',focus:'Refinements & pressing',members:4},
+  {name:'QA Team',focus:'Quality assurance & dispatch',members:3},
+  {name:'Client Services',focus:'Customer communication',members:3}
+];
+const GARMENTS=[
+  {name:'Bridal Lehenga',cat:'Bridal',g:'f',base:2800},
+  {name:'Bridal Saree',cat:'Bridal',g:'f',base:1900},
+  {name:'Custom Gown',cat:'Couture',g:'f',base:1600},
+  {name:'Evening Dress',cat:'Eveningwear',g:'f',base:950},
+  {name:'Cocktail Dress',cat:'Eveningwear',g:'f',base:720},
+  {name:'Anarkali',cat:'Festive',g:'f',base:880},
+  {name:'Wedding Sherwani',cat:'Menswear',g:'m',base:1450},
+  {name:'Formal Suit',cat:'Menswear',g:'m',base:980},
+  {name:'Tuxedo',cat:'Menswear',g:'m',base:1150}
+];
+const NAMES={
+  PK:['Ayesha Khan','Bilal Ahmed','Sana Malik','Hamza Iqbal','Zainab Raza','Usman Tariq','Mariam Siddiqui','Farhan Sheikh','Hira Nawaz','Ali Hassan','Noor Fatima','Saad Rehman','Iqra Javed','Hassan Abbas','Amna Qureshi','Bilawal Butt'],
+  GB:['Charlotte Hughes','Oliver Bennett','Amelia Clarke','George Turner','Isla Robinson','Harry Walsh','Sophie Price','Jack Morgan','Emily Foster','Thomas Shaw','Grace Holland','Daniel Reid'],
+  US:['Emily Johnson','Michael Davis','Ava Martinez','Noah Wilson','Olivia Brown','Ethan Garcia','Mia Rodriguez','Jacob Lee','Sophia Clark','Mason Lewis'],
+  AE:['Fatima Al-Marri','Khalid Al-Mansoori','Noura Al-Suwaidi','Omar Al-Nuaimi','Maryam Al-Hashimi','Saeed Al-Falasi','Alya Al-Qubaisi','Hamad Al-Shamsi'],
+  SA:['Abdullah Al-Qahtani','Reem Al-Harbi','Faisal Al-Otaibi','Lama Al-Ghamdi','Turki Al-Dossari','Hessa Al-Shehri','Majed Al-Zahrani'],
+  CA:['Sophie Tremblay','Liam Roy','Chloe Gagnon','William Bouchard','Olivia Côté'],
+  AU:['Chloe Wilson','Jack Taylor','Ruby Anderson','Lachlan Nguyen']
+};
+const PRIO=[['Standard',62],['High',26],['Rush',12]];
+const weightedPrio=()=>{let r=ri(100),a=0;for(const[p,w]of PRIO){a+=w;if(r<a)return p}return 'Standard'};
+const ucFirst=s=>s.charAt(0).toUpperCase()+s.slice(1);
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=ri(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
+
+/* ---- build 248 orders with EXACT country + stage distributions ---- */
+function build(){
+  const countryBag=[],stageBag=[];
+  COUNTRIES.forEach(c=>{for(let i=0;i<c.count;i++)countryBag.push(c.code)});
+  STAGES.forEach(s=>{for(let i=0;i<s.count;i++)stageBag.push(s.key)});
+  shuffle(countryBag);shuffle(stageBag);           // both length 248
+  const orders=[];
+  const nameIdx={}; COUNTRIES.forEach(c=>nameIdx[c.code]=0);
+  for(let i=0;i<248;i++){
+    const code=countryBag[i], stageKey=stageBag[i], si=stageIndex(stageKey);
+    const g=rpick(GARMENTS);
+    const nmList=NAMES[code]; const cust=nmList[nameIdx[code]++ % nmList.length];
+    const prio=weightedPrio();
+    const leadWeeks=g.cat==='Bridal'?10+ri(3):8+ri(3);         // 8–12 weeks
+    const leadDays=leadWeeks*7;
+    const progress=(si+0.5)/STAGES.length;                      // how far along
+    const orderDate=addDays(TODAY,-Math.round(progress*leadDays)-ri(4));
+    let dueDate=addDays(orderDate,leadDays);
+    const id='AO-'+(4600+i);
+    orders.push({i,id,code,customer:cust,garment:g.name,cat:g.cat,gender:g.g,stage:stageKey,si,
+      prio,orderDate,dueDate,leadDays,value:g.base+ri(600),delayed:false,
+      updatedAgo:ri(10),team:STAGES[si].team});
+  }
+  // mark delayed per stage (exact counts)
+  STAGES.forEach(s=>{
+    const grp=shuffle(orders.filter(o=>o.stage===s.key));
+    for(let k=0;k<s.delayed;k++){const o=grp[k];o.delayed=true;o.dueDate=addDays(TODAY,-(1+ri(8)));o.updatedAgo=Math.max(o.updatedAgo,4)}
+  });
+  // 36 due this week (not already delayed)
+  const notDelayed=shuffle(orders.filter(o=>!o.delayed));
+  for(let k=0;k<36;k++){const o=notDelayed[k];o.dueThisWeek=true;o.dueDate=addDays(TODAY,1+ri(7))}
+  // status + stageHistory
+  orders.forEach(o=>{
+    o.status = o.delayed?'Delayed' : (o.dueThisWeek&&o.si<=2)?'At risk' : o.si===5?'Quality check' : (o.si===0&&o.updatedAgo<2)?'New':'In production';
+    // stage history
+    const hist=[]; let d=new Date(o.orderDate);
+    for(let s=0;s<=o.si;s++){
+      const done=s<o.si;
+      hist.push({stage:STAGES[s].name,at:new Date(d),done,current:s===o.si});
+      d=addDays(d,STAGES[s].target+ri(2));
+    }
+    o.history=hist;
+    o.lastUpdated=addDays(TODAY,-o.updatedAgo);
+    o.track='TRK-'+o.id.slice(3)+'-'+(1000+ri(9000));
+    o.notes=makeNote(o);
+  });
+  return orders;
+}
+function makeNote(o){
+  const n=['Client approved fabric swatch; proceeding on schedule.',
+    'Awaiting final embroidery motif sign-off from client.',
+    'Measurements confirmed via video fitting.',
+    'Second fitting scheduled before refinements.',
+    'Rush handling approved — surcharge applied.',
+    'Fabric sourced from preferred mill; lot reserved.',
+    'Client requested minor neckline adjustment.',
+    'Delivery address verified with client services.'];
+  return o.delayed?'Flagged: stage running past target — see exceptions.':rpick(n);
+}
+const ORDERS=build();
+const orderById=id=>ORDERS.find(o=>o.id===id);
+const countryByCode=c=>COUNTRIES.find(x=>x.code===c);
+const ordersByCode=c=>ORDERS.filter(o=>o.code===c);
+
+/* ---- customers (linked, consistent) ---- */
+function buildCustomers(){
+  const map={};
+  ORDERS.forEach(o=>{
+    const key=o.code+'|'+o.customer;
+    if(!map[key]){
+      const c=countryByCode(o.code);
+      const email=o.customer.toLowerCase().replace(/[^a-z]+/g,'.')+'@example.com';
+      map[key]={id:'CU-'+(1000+Object.keys(map).length),name:o.customer,code:o.code,country:c.name,
+        email, phone:fakePhone(o.code), type:rpick(['New','Returning','VIP','Returning']),
+        orders:[], measurements:measFor(o), notes:rpick(['Prefers email contact.','VIP — assign senior stylist.','Allergy note: avoid metallic thread.','Repeat client, 2024 & 2025 commissions.','Contact via WhatsApp only.'])};
+    }
+    map[key].orders.push(o.id);
+    o.customerId=map[key].id;
+  });
+  const list=Object.values(map);
+  list.forEach(c=>{c.type = c.orders.length>1?(rng()<.5?'VIP':'Returning'):c.type});
+  return list;
+}
+function fakePhone(code){
+  const p={PK:'+92 3•• ••• ',GB:'+44 7••• •• ',US:'+1 ••• ••• ',AE:'+971 5• ••• ',SA:'+966 5• ••• ',CA:'+1 ••• ••• ',AU:'+61 4•• ••• '}[code];
+  return p+(1000+ri(9000));
+}
+function measFor(o){
+  if(o.gender==='f')return {Bust:(32+ri(8))+'"',Waist:(24+ri(8))+'"',Hips:(34+ri(8))+'"',Height:"5'"+(2+ri(8))+'"'};
+  return {Chest:(36+ri(8))+'"',Shoulder:(16+ri(4))+'"',Waist:(30+ri(8))+'"',Sleeve:(23+ri(4))+'"'};
+}
+const CUSTOMERS=buildCustomers();
+const customerById=id=>CUSTOMERS.find(c=>c.id===id);
+
+/* ---- exceptions (derived, actionable) ---- */
+function buildExceptions(){
+  const ex=[]; let n=0;
+  const mk=(o,type,sev,next,status)=>({id:'EX-'+(2000+n++),orderId:o.id,code:o.code,type,severity:sev,team:o.team,
+    created:addDays(TODAY,-(ri(5))),status:status||rpick(['Open','Open','In Progress']),next});
+  ORDERS.filter(o=>o.delayed).forEach(o=>ex.push(mk(o,'Overdue stage',rng()<.5?'Critical':'High','Reassign to '+o.team+' and expedite','Open')));
+  shuffle(ORDERS.filter(o=>o.dueThisWeek&&o.si<=2&&!o.delayed)).slice(0,5).forEach(o=>ex.push(mk(o,'Delivery risk','High','Confirm timeline with client services','In Progress')));
+  shuffle(ORDERS.filter(o=>o.updatedAgo>=7&&!o.delayed)).slice(0,4).forEach(o=>ex.push(mk(o,'No recent update','Medium','Request status note from '+o.team,'Open')));
+  // capacity
+  ['Stitching','Embellishment'].forEach(st=>{
+    const s=STAGES.find(x=>x.name===st);
+    ex.push({id:'EX-'+(2000+n++),orderId:'—',code:'',type:'Capacity constraint',severity:'Medium',team:s.team,
+      created:addDays(TODAY,-2),status:'In Progress',next:st+' queue at '+s.count+' orders — consider overflow team'});
+  });
+  // a few resolved for realism
+  shuffle(ORDERS.filter(o=>!o.delayed)).slice(0,3).forEach(o=>ex.push({id:'EX-'+(2000+n++),orderId:o.id,code:o.code,type:'No recent update',severity:'Low',team:o.team,created:addDays(TODAY,-6),status:'Resolved',next:'Update received — closed'}));
+  return ex;
+}
+const EXCEPTIONS=buildExceptions();
+
+/* ---- settings (configurable) ---- */
+const SETTINGS={
+  brand:{name:'Atelier',initials:'A',currency:'USD',accent:'#007aff'},
+  roles:['Admin','Production Manager','Atelier Lead','Client Services','Viewer'],
+  notify:{delays:true,newOrders:true,dailyDigest:false,trackingViews:true},
+  tracking:{publicPage:true,showEstimate:true,showStageHistory:true,support:'support@atelier.demo'}
+};
+
+/* summary metrics */
+const M={active:248,dueWeek:36,onTime:92,delayed:ORDERS.filter(o=>o.delayed).length};
+
+/* =========================================================================
+   UI
+   ========================================================================= */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const initials=n=>n.split(' ').filter(x=>/[A-Za-z]/.test(x[0]||'')).slice(0,2).map(x=>x[0]).join('').toUpperCase();
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(window._t);window._t=setTimeout(()=>e.classList.remove('on'),2200)}
+
+const statusPill=s=>({'Delayed':'red','At risk':'orange','In production':'blue','Quality check':'purple','New':'gray','Resolved':'green'}[s]||'gray');
+const stageName=k=>STAGES[stageIndex(k)].name;
+const flag=c=>({PK:'🇵🇰',GB:'🇬🇧',US:'🇺🇸',AE:'🇦🇪',SA:'🇸🇦',CA:'🇨🇦',AU:'🇦🇺'}[c]||'');
+
+const NAV=[
+  {sec:'Workspace'},
+  {id:'overview',label:'Overview',icon:'M3 11l9-8 9 8M5 10v10h14V10'},
+  {id:'orders',label:'Orders',icon:'M6 2h12l1 5H5zM5 7h14l-1 14H6z',ct:()=>M.active},
+  {id:'production',label:'Production',icon:'M5 4h5v5H5zM14 15h5v5h-5zM10 6h5a3 3 0 013 3v5'},
+  {id:'exceptions',label:'Exceptions',icon:'M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z',ct:()=>EXCEPTIONS.filter(e=>e.status!=='Resolved').length,red:true},
+  {sec:'People & delivery'},
+  {id:'customers',label:'Customers',icon:'M16 11a4 4 0 10-8 0M4 21a8 8 0 0116 0'},
+  {id:'tracking',label:'Tracking',icon:'M12 2a7 7 0 00-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 00-7-7zM12 9a2 2 0 100-4 2 2 0 000 4z'},
+  {sec:'Insight'},
+  {id:'reports',label:'Reports',icon:'M4 20V10M10 20V4M16 20v-7M22 20H2'},
+  {id:'settings',label:'Settings',icon:'M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 13a7.9 7.9 0 000-2l2-1.5-2-3.4-2.4 1a8 8 0 00-1.7-1L14 2h-4l-.3 2.6a8 8 0 00-1.7 1l-2.4-1-2 3.4L4.6 11a7.9 7.9 0 000 2l-2 1.5 2 3.4 2.4-1a8 8 0 001.7 1L10 22h4l.3-2.6a8 8 0 001.7-1l2.4 1 2-3.4z'}
+];
+function renderNav(){
+  $('#nav').innerHTML=NAV.map(n=>{
+    if(n.sec)return `<div class="sec">${n.sec}</div>`;
+    const c=n.ct?n.ct():0;
+    return `<button data-v="${n.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${n.icon}"/></svg>${n.label}${c?`<span class="ct ${n.red?'red':''}">${c}</span>`:''}</button>`;
+  }).join('');
+  $('#nav').querySelectorAll('button').forEach(b=>b.onclick=()=>go(b.dataset.v));
+}
+let cur='overview';
+const TITLES={overview:'Overview',orders:'Orders',production:'Production',exceptions:'Exceptions',customers:'Customers',tracking:'Tracking',reports:'Reports',settings:'Settings'};
+function go(v){cur=v;$('#pageTitle').textContent=TITLES[v];
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  $('#view').innerHTML=VIEWS[v]();if(AFTER[v])AFTER[v]();window.scrollTo(0,0);$('#sidebar').classList.remove('open')}
+
+const VIEWS={},AFTER={};
+
+/* =============== OVERVIEW =============== */
+let selCode='PK';
+VIEWS.overview=()=>{
+  return `
+  <div class="kpis" style="margin-bottom:16px">
+    ${kpi('Active orders',M.active,'+14 this month','g')}
+    ${kpi('Due this week',M.dueWeek,'across 6 stages','n')}
+    ${kpi('On-time delivery',M.onTime+'%','last 90 days · sample','g')}
+    ${kpi('Delayed orders',M.delayed,'needs attention','r')}
+  </div>
+  <div class="grid" style="grid-template-columns:1.55fr 1fr;align-items:start">
+    <div class="card">
+      <div class="hd"><h3>Global order activity</h3><span class="pill teal"><span></span>${M.active} orders · 7 countries</span></div>
+      <div class="scene" id="scene"></div>
+      <div style="padding:4px 16px 16px;display:flex;gap:8px;flex-wrap:wrap" id="ctryChips"></div>
+    </div>
+    <div id="ctryPanel"></div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <div class="hd"><h3>Orders requiring attention</h3><button class="btn sm" onclick="go('exceptions')">View all exceptions</button></div>
+    <div id="attn"></div>
+  </div>`;
+};
+function kpi(l,v,d,c){return `<div class="kpi"><div class="lb">${l}</div><div class="vl">${v}</div><div class="dl ${c}">${d}</div></div>`}
+AFTER.overview=()=>{buildGlobe($('#scene'));renderCtryChips();selectCountry(selCode);renderAttn()};
+function renderCtryChips(){
+  $('#ctryChips').innerHTML=COUNTRIES.map(c=>`<button class="chipf" data-c="${c.code}" style="cursor:pointer">${flag(c.code)} ${c.name} · <b>${c.count}</b></button>`).join('');
+  $('#ctryChips').querySelectorAll('button').forEach(b=>b.onclick=()=>selectCountry(b.dataset.c));
+}
+function selectCountry(code){
+  selCode=code;const c=countryByCode(code);const os=ordersByCode(code);
+  const dist=STAGES.map(s=>({name:s.name,n:os.filter(o=>o.stage===s.key).length}));
+  const del=os.filter(o=>o.delayed).length;
+  document.querySelectorAll('#scene .gmk').forEach(m=>m.classList.toggle('sel',m.dataset.c===code));
+  $('#ctryPanel').innerHTML=`<div class="card"><div class="hd"><h3>${flag(code)} ${c.name}</h3><span class="pill blue"><span></span>${c.count} active</span></div>
+    <div style="padding:4px 20px 16px">
+      <div class="row2"><span class="l">Active orders</span><b>${c.count}</b></div>
+      <div class="row2"><span class="l">Delayed</span><b style="color:${del?'var(--red-d)':'var(--ink)'}">${del}</b></div>
+      <div class="row2"><span class="l">Share of total</span><b>${Math.round(c.count/248*100)}%</b></div>
+      <h4 style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);margin:16px 0 10px">Stage distribution</h4>
+      ${dist.map(d=>`<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span class="muted">${d.name}</span><b>${d.n}</b></div><div class="bar"><i style="width:${c.count?d.n/c.count*100:0}%"></i></div></div>`).join('')}
+      <button class="btn tint" style="width:100%;margin-top:14px;justify-content:center" onclick="openOrders('${code}')">View ${c.name} orders</button>
+    </div></div>`;
+}
+function renderAttn(){
+  const rows=[...ORDERS.filter(o=>o.delayed),...ORDERS.filter(o=>o.dueThisWeek&&o.si<=1&&!o.delayed).slice(0,4),...ORDERS.filter(o=>o.updatedAgo>=8&&!o.delayed).slice(0,3)].slice(0,9);
+  $('#attn').innerHTML=`<table class="tbl"><thead><tr><th class="no">Order</th><th class="no">Client</th><th class="no">Garment</th><th class="no">Issue</th><th class="no">Stage</th><th class="no">Due</th><th class="no"></th></tr></thead><tbody>${rows.map(o=>{
+    const issue=o.delayed?'<span class="pill red"><span></span>Overdue stage</span>':o.dueThisWeek?'<span class="pill orange"><span></span>Delivery risk</span>':'<span class="pill gray"><span></span>No recent update</span>';
+    return `<tr onclick="openOrder('${o.id}')"><td><b>${o.id}</b></td><td><div class="cell-c"><span class="ava">${initials(o.customer)}</span>${o.customer}</div></td><td class="num">${o.garment}</td><td>${issue}</td><td class="num">${stageName(o.stage)}</td><td class="num">${fmtDS(o.dueDate)}</td><td style="text-align:right"><span class="btn sm tint">Open</span></td></tr>`;
+  }).join('')}</tbody></table>`;
+}
+
+/* ---- globe ---- */
+function buildGlobe(scene){
+  const R=170;
+  const E=[[-100,45,30,22],[-88,58,30,13],[-90,22,12,11],[-60,-20,18,27],[-66,3,12,10],[18,3,22,30],[16,27,25,12],[16,53,22,11],[92,47,46,24],[82,20,22,16],[48,27,14,12],[134,-26,16,11],[-42,72,12,8]];
+  const land=(lon,lat)=>E.some(([cx,cy,a,b])=>{const dx=(lon-cx)/a,dy=(lat-cy)/b;return dx*dx+dy*dy<=1});
+  let dots='';
+  for(let lat=-84;lat<=84;lat+=6)for(let lon=-180;lon<180;lon+=6)if(land(lon,lat))
+    dots+=`<span class="pt" style="transform:rotateY(${lon}deg) rotateX(${-lat}deg) translateZ(${R}px)"></span>`;
+  const marks=COUNTRIES.map((c,i)=>`<span class="gmk" data-c="${c.code}" style="transform:rotateY(${c.lon}deg) rotateX(${-c.lat}deg) translateZ(${R+3}px)"><span class="rg" style="animation-delay:${i*0.35}s"></span><span class="co"></span></span>`).join('');
+  scene.innerHTML=`<div class="tilt"><div class="disc"></div><div class="sphere" id="sphere">${dots}${marks}</div></div><div class="sheen"></div>`;
+  scene.querySelectorAll('.gmk').forEach(m=>m.onclick=e=>{e.stopPropagation();selectCountry(m.dataset.c)});
+}
+
+/* =============== ORDERS =============== */
+let oState={q:'',stage:'all',status:'all',country:'all',sort:'due',dir:1};
+function openOrders(code){oState={q:'',stage:'all',status:'all',country:code,sort:'due',dir:1};go('orders')}
+VIEWS.orders=()=>`
+  <div class="toolbar">
+    <div class="srch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg><input class="fld" id="oq" placeholder="Search order, client, garment…" value="${esc(oState.q)}" style="width:260px;padding-left:32px"></div>
+    <select class="fld" id="ostage"><option value="all">All stages</option>${STAGES.map(s=>`<option value="${s.key}">${s.name}</option>`).join('')}</select>
+    <select class="fld" id="ostatus"><option value="all">All statuses</option>${['New','In production','At risk','Delayed','Quality check'].map(s=>`<option>${s}</option>`).join('')}</select>
+    <select class="fld" id="ocountry"><option value="all">All destinations</option>${COUNTRIES.map(c=>`<option value="${c.code}">${c.name}</option>`).join('')}</select>
+    <span class="muted tiny" id="ocount" style="margin-left:auto"></span>
+  </div>
+  <div class="card" style="overflow:hidden"><table class="tbl" id="otbl">
+    <thead><tr>
+      ${th('id','Order')}${th('customer','Client')}${th('garment','Garment')}${th('country','Destination')}
+      ${th('orderDate','Placed')}${th('dueDate','Due')}${th('stage','Stage')}${th('status','Status')}
+      <th class="no" style="text-align:right">Actions</th>
+    </tr></thead><tbody id="orows"></tbody>
+  </table><div id="oempty"></div></div>`;
+function th(k,l){const a=oState.sort===k?(oState.dir>0?' ▲':' ▼'):'';return `<th data-k="${k}">${l}<span class="ar">${a}</span></th>`}
+AFTER.orders=()=>{
+  const sv=()=>{oState.q=$('#oq').value;oState.stage=$('#ostage').value;oState.status=$('#ostatus').value;oState.country=$('#ocountry').value;renderOrders()};
+  $('#oq').oninput=sv;$('#ostage').onchange=sv;$('#ostatus').onchange=sv;$('#ocountry').onchange=sv;
+  $('#ostage').value=oState.stage;$('#ostatus').value=oState.status;$('#ocountry').value=oState.country;
+  $('#otbl').querySelectorAll('th[data-k]').forEach(h=>h.onclick=()=>{const k=h.dataset.k;if(oState.sort===k)oState.dir*=-1;else{oState.sort=k;oState.dir=1}renderOrders();AFTER.orders._rehead()});
+  AFTER.orders._rehead=()=>{$('#otbl thead tr').innerHTML=`${th('id','Order')}${th('customer','Client')}${th('garment','Garment')}${th('country','Destination')}${th('orderDate','Placed')}${th('dueDate','Due')}${th('stage','Stage')}${th('status','Status')}<th class="no" style="text-align:right">Actions</th>`;$('#otbl').querySelectorAll('th[data-k]').forEach(h=>h.onclick=()=>{const k=h.dataset.k;if(oState.sort===k)oState.dir*=-1;else{oState.sort=k;oState.dir=1}renderOrders();AFTER.orders._rehead()})};
+  renderOrders();
+};
+function filteredOrders(){
+  let l=ORDERS.slice();
+  const q=oState.q.toLowerCase().trim();
+  if(q)l=l.filter(o=>(o.id+o.customer+o.garment+countryByCode(o.code).name).toLowerCase().includes(q));
+  if(oState.stage!=='all')l=l.filter(o=>o.stage===oState.stage);
+  if(oState.status!=='all')l=l.filter(o=>o.status===oState.status);
+  if(oState.country!=='all')l=l.filter(o=>o.code===oState.country);
+  const k=oState.sort,d=oState.dir;
+  l.sort((a,b)=>{let x,y;
+    if(k==='country'){x=countryByCode(a.code).name;y=countryByCode(b.code).name}
+    else if(k==='stage'){x=a.si;y=b.si}
+    else if(k==='orderDate'||k==='dueDate'){x=a[k].getTime();y=b[k].getTime()}
+    else{x=a[k];y=b[k]}
+    return (x<y?-1:x>y?1:0)*d});
+  return l;
+}
+function renderOrders(){
+  const l=filteredOrders();
+  $('#ocount').textContent=l.length+' of 248 orders';
+  $('#orows').innerHTML=l.map(o=>`<tr onclick="openOrder('${o.id}')">
+    <td><b>${o.id}</b>${o.prio==='Rush'?' <span class="pill orange" style="margin-left:3px"><span></span>Rush</span>':''}</td>
+    <td><div class="cell-c"><span class="ava">${initials(o.customer)}</span>${o.customer}</div></td>
+    <td class="num">${o.garment}</td>
+    <td class="num">${flag(o.code)} ${countryByCode(o.code).name}</td>
+    <td class="num">${fmtDS(o.orderDate)}</td>
+    <td class="num">${fmtDS(o.dueDate)}</td>
+    <td class="num">${stageName(o.stage)}</td>
+    <td><span class="pill ${statusPill(o.status)}"><span></span>${o.status}</span></td>
+    <td style="text-align:right"><span class="btn sm tint">View</span></td></tr>`).join('');
+  $('#oempty').innerHTML=l.length?'':'<div class="empty">No orders match your filters.</div>';
+}
+
+/* order detail drawer */
+function openOrder(id){
+  const o=orderById(id),cu=customerById(o.customerId),c=countryByCode(o.code);
+  const tl=STAGES.map((s,i)=>{const cls=i<o.si?'done':i===o.si?'cur':'pend';const h=o.history[i];
+    return `<li class="${cls}"><div style="font-weight:600;font-size:14px">${s.name}</div><div class="tiny muted">${i<o.si?'Completed · '+fmtDS(h.at):i===o.si?'In progress · '+s.team:'Pending'}</div></li>`}).join('');
+  const meas=Object.entries(cu.measurements).map(([k,v])=>`<div class="row2"><span class="l">${k}</span><b>${v}</b></div>`).join('');
+  drawer(`${o.id} · ${o.garment}`,`
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
+      <span class="ava" style="width:42px;height:42px;font-size:15px">${initials(o.customer)}</span>
+      <div style="flex:1"><div style="font-weight:600;font-size:16px">${o.customer}</div><div class="tiny muted">${flag(o.code)} ${c.name} · ${cu.type} client</div></div>
+      <span class="pill ${statusPill(o.status)}"><span></span>${o.status}</span>
+    </div>
+    ${o.delayed?`<div style="background:var(--red-s);border-radius:12px;padding:12px 14px;margin-bottom:18px;font-size:13px;color:var(--ink2)"><b style="color:var(--red-d)">Overdue stage.</b> This order is past its target at ${stageName(o.stage)} — logged in Exceptions.</div>`:''}
+    <div class="sect"><h4>Order</h4>
+      <div class="row2"><span class="l">Garment</span><b>${o.garment} · ${o.cat}</b></div>
+      <div class="row2"><span class="l">Priority</span><b>${o.prio}</b></div>
+      <div class="row2"><span class="l">Order value</span><b>${money(o.value)} <span class="muted tiny">(sample)</span></b></div>
+      <div class="row2"><span class="l">Placed</span><b>${fmtD(o.orderDate)}</b></div>
+      <div class="row2"><span class="l">Expected delivery</span><b>${fmtD(o.dueDate)}</b></div>
+      <div class="row2"><span class="l">Assigned team</span><b>${o.team}</b></div>
+      <div class="row2"><span class="l">Last updated</span><b>${fmtDT(o.lastUpdated)}</b></div>
+    </div>
+    <div class="sect"><h4>Production timeline</h4><ul class="tl">${tl}</ul>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn pri sm" onclick="advance('${o.id}')">Advance stage</button>
+        <button class="btn sm" onclick="markDelayed('${o.id}')">${o.delayed?'Clear flag':'Flag delay'}</button>
+      </div>
+    </div>
+    <div class="sect"><h4>Customer measurements</h4><div style="display:grid;grid-template-columns:1fr 1fr;gap:0 18px">${meas}</div></div>
+    <div class="sect"><h4>Notes</h4><div style="font-size:14px;color:var(--ink2);background:var(--card);border-radius:12px;padding:12px 14px;box-shadow:var(--sh)">${esc(o.notes)}</div></div>
+    <div class="sect"><h4>Tracking</h4>
+      <div class="row2"><span class="l">Tracking ref</span><b>${o.track}</b></div>
+      <div style="display:flex;gap:8px;margin-top:8px"><button class="btn tint sm" onclick="openTracking('${o.id}')">Open tracking page</button><button class="btn sm" onclick="copyLink('${o.track}')">Copy secure link</button></div>
+      <div class="tiny muted" style="margin-top:8px">Simulated tracking — the public page never shows internal notes or private details.</div>
+    </div>`);
+}
+function advance(id){const o=orderById(id);if(o.si>=5){toast('Order is at final stage (QA)');return}
+  o.si++;o.stage=STAGE_ORDER[o.si];o.team=STAGES[o.si].team;o.delayed=false;o.status=o.si===5?'Quality check':'In production';
+  o.history.push({stage:STAGES[o.si].name,at:new Date(TODAY),current:true});o.lastUpdated=new Date(TODAY);
+  toast('Advanced to '+STAGES[o.si].name);openOrder(id)}
+function markDelayed(id){const o=orderById(id);o.delayed=!o.delayed;o.status=o.delayed?'Delayed':(o.si===5?'Quality check':'In production');toast(o.delayed?'Flagged as delayed':'Delay flag cleared');openOrder(id)}
+function copyLink(t){toast('Secure tracking link copied (simulated)')}
+
+/* =============== PRODUCTION =============== */
+VIEWS.production=()=>`
+  <div class="toolbar"><div><h2 style="font-size:20px">Production stages</h2><div class="muted tiny" style="margin-top:2px">Configurable pipeline · ${M.active} orders in flight · ${M.delayed} delayed</div></div>
+    <button class="btn sm" onclick="go('settings')" style="margin-left:auto">Edit stage targets</button></div>
+  <div class="grid" style="grid-template-columns:repeat(3,1fr)">
+    ${STAGES.map((s,i)=>{const awaiting=i<5?ORDERS.filter(o=>o.si===i+1).length:0;
+      return `<div class="stage-col"><div class="sh" style="display:flex;align-items:center;justify-content:space-between">
+        <div><div style="font-weight:700;font-size:15px">${i+1}. ${s.name}</div><div class="tiny muted">${s.team}</div></div>
+        ${s.delayed?`<span class="pill red"><span></span>${s.delayed} delayed</span>`:`<span class="pill green"><span></span>On track</span>`}</div>
+        <div style="padding:14px 16px">
+          <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:30px;font-weight:700;letter-spacing:-.03em">${s.count}</span><span class="muted tiny">orders</span></div>
+          <div class="bar" style="margin:12px 0 14px"><i style="width:${s.count/64*100}%;background:${s.delayed?'var(--orange)':'var(--blue)'}"></i></div>
+          <div class="row2"><span class="l">Target duration</span><b>${s.target} days</b></div>
+          <div class="row2"><span class="l">Avg time spent</span><b style="color:${s.avg>s.target?'var(--orange-d)':'var(--ink)'}">${s.avg} days</b></div>
+          <div class="row2"><span class="l">Delayed work</span><b>${s.delayed}</b></div>
+          <div class="row2" style="border:0"><span class="l">Awaiting next stage</span><b>${awaiting}</b></div>
+          <button class="btn tint sm" style="width:100%;margin-top:12px;justify-content:center" onclick="openStage('${s.key}')">View ${s.count} orders</button>
+        </div></div>`}).join('')}
+  </div>
+  <div class="card" style="margin-top:16px"><div class="hd"><h3>Stage workload</h3><span class="muted tiny">Totals ${STAGES.reduce((a,s)=>a+s.count,0)} orders</span></div>
+    <div class="chartwrap">${hbars(STAGES.map(s=>({l:s.name,v:s.count,d:s.delayed})))}</div></div>`;
+function openStage(key){oState={q:'',stage:key,status:'all',country:'all',sort:'due',dir:1};go('orders')}
+function hbars(rows){const max=Math.max(...rows.map(r=>r.v));
+  return rows.map(r=>`<div style="display:flex;align-items:center;gap:12px;margin-bottom:11px">
+    <div style="width:150px;font-size:13px;color:var(--ink2);flex:none">${r.l}</div>
+    <div class="bar" style="flex:1;height:22px;border-radius:7px;background:#eef0f3;position:relative">
+      <i style="width:${r.v/max*100}%;border-radius:7px;background:var(--blue)"></i>
+      ${r.d?`<i style="width:${r.d/max*100}%;border-radius:7px;background:var(--orange);position:absolute;left:0;top:0"></i>`:''}</div>
+    <div style="width:70px;text-align:right;font-weight:600;font-size:13px">${r.v}${r.d?` <span class="muted" style="font-weight:500">· ${r.d}⚠</span>`:''}</div></div>`).join('')
+    +`<div class="legend" style="margin-top:8px"><span><i style="background:var(--blue)"></i>Orders in stage</span><span><i style="background:var(--orange)"></i>Delayed</span></div>`;
+}
+
+/* =============== EXCEPTIONS =============== */
+let exFilter='all';
+VIEWS.exceptions=()=>`
+  <div class="toolbar">
+    <div class="seg" id="exseg">
+      ${['all','Open','In Progress','Resolved'].map(s=>`<button data-s="${s}" class="${exFilter===s?'on':''}">${s==='all'?'All':s}</button>`).join('')}
+    </div>
+    <span class="muted tiny" id="excount" style="margin-left:auto"></span>
+  </div>
+  <div class="card" style="overflow:hidden"><table class="tbl"><thead><tr>
+    <th class="no">Exception</th><th class="no">Order</th><th class="no">Issue</th><th class="no">Severity</th><th class="no">Team</th><th class="no">Created</th><th class="no">Status</th><th class="no" style="text-align:right">Next action</th>
+  </tr></thead><tbody id="exrows"></tbody></table><div id="exempty"></div></div>`;
+AFTER.exceptions=()=>{$('#exseg').querySelectorAll('button').forEach(b=>b.onclick=()=>{exFilter=b.dataset.s;go('exceptions')});renderEx()};
+function renderEx(){
+  const sevP={Critical:'red',High:'orange',Medium:'purple',Low:'gray'};
+  const stP={Open:'red','In Progress':'orange',Resolved:'green'};
+  let l=EXCEPTIONS.slice();if(exFilter!=='all')l=l.filter(e=>e.status===exFilter);
+  l.sort((a,b)=>({Critical:0,High:1,Medium:2,Low:3}[a.severity]-{Critical:0,High:1,Medium:2,Low:3}[b.severity]));
+  $('#excount').textContent=l.length+' records';
+  $('#exrows').innerHTML=l.map(e=>`<tr onclick="${e.orderId!=='—'?`openOrder('${e.orderId}')`:''}">
+    <td><b>${e.id}</b></td><td class="num">${e.orderId}</td><td>${e.type}</td>
+    <td><span class="pill ${sevP[e.severity]}"><span></span>${e.severity}</span></td>
+    <td class="num">${e.team}</td><td class="num">${fmtDT(e.created)}</td>
+    <td><span class="pill ${stP[e.status]}"><span></span>${e.status}</span></td>
+    <td style="text-align:right;max-width:240px"><div style="display:flex;gap:7px;align-items:center;justify-content:flex-end"><span class="muted tiny" style="text-align:right">${esc(e.next)}</span>${e.status!=='Resolved'?`<button class="btn sm tint" onclick="event.stopPropagation();cycleEx('${e.id}')">${e.status==='Open'?'Start':'Resolve'}</button>`:''}</div></td></tr>`).join('');
+  $('#exempty').innerHTML=l.length?'':'<div class="empty">No exceptions in this state.</div>';
+}
+function cycleEx(id){const e=EXCEPTIONS.find(x=>x.id===id);e.status=e.status==='Open'?'In Progress':'Resolved';toast('Exception '+id+' → '+e.status);renderNav();renderEx()}
+
+/* =============== CUSTOMERS =============== */
+let custQ='';
+VIEWS.customers=()=>`
+  <div class="toolbar"><div class="srch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg><input class="fld" id="cq" placeholder="Search customers…" value="${esc(custQ)}" style="width:260px;padding-left:32px"></div>
+    <span class="muted tiny" id="ccount" style="margin-left:auto"></span></div>
+  <div class="card" style="overflow:hidden"><table class="tbl"><thead><tr><th class="no">Customer</th><th class="no">Destination</th><th class="no">Contact</th><th class="no">Type</th><th class="no">Orders</th><th class="no" style="text-align:right">Actions</th></tr></thead><tbody id="crows"></tbody></table><div id="cempty"></div></div>`;
+AFTER.customers=()=>{$('#cq').oninput=()=>{custQ=$('#cq').value;renderCust()};renderCust()};
+function renderCust(){
+  let l=CUSTOMERS.slice();const q=custQ.toLowerCase().trim();
+  if(q)l=l.filter(c=>(c.name+c.country+c.id).toLowerCase().includes(q));
+  l.sort((a,b)=>b.orders.length-a.orders.length);
+  $('#ccount').textContent=l.length+' of '+CUSTOMERS.length+' customers';
+  $('#crows').innerHTML=l.slice(0,120).map(c=>`<tr onclick="openCustomer('${c.id}')">
+    <td><div class="cell-c"><span class="ava">${initials(c.name)}</span><div><div style="font-weight:500">${c.name}</div><div class="tiny muted">${c.id}</div></div></div></td>
+    <td class="num">${flag(c.code)} ${c.country}</td><td class="num">${c.phone}</td>
+    <td><span class="pill ${c.type==='VIP'?'purple':c.type==='Returning'?'blue':'gray'}"><span></span>${c.type}</span></td>
+    <td class="num">${c.orders.length}</td><td style="text-align:right"><span class="btn sm tint">View</span></td></tr>`).join('');
+  $('#cempty').innerHTML=l.length?(l.length>120?'<div class="empty tiny">Showing first 120 — refine your search to see more.</div>':''):'<div class="empty">No customers match.</div>';
+}
+function openCustomer(id){
+  const c=customerById(id);const os=c.orders.map(orderById);
+  const meas=Object.entries(c.measurements).map(([k,v])=>`<div class="row2"><span class="l">${k}</span><b>${v}</b></div>`).join('');
+  drawer(c.name,`
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px"><span class="ava" style="width:42px;height:42px;font-size:15px">${initials(c.name)}</span>
+      <div style="flex:1"><div style="font-weight:600;font-size:16px">${c.name}</div><div class="tiny muted">${c.id} · ${flag(c.code)} ${c.country}</div></div>
+      <span class="pill ${c.type==='VIP'?'purple':c.type==='Returning'?'blue':'gray'}"><span></span>${c.type}</span></div>
+    <div class="sect"><h4>Contact</h4>
+      <div class="row2"><span class="l">Email</span><b>${c.email}</b></div>
+      <div class="row2"><span class="l">Phone</span><b>${c.phone}</b></div>
+      <div class="row2"><span class="l">Destination</span><b>${c.country}</b></div></div>
+    <div class="sect"><h4>Order history (${os.length})</h4>${os.map(o=>`<div class="row2" style="cursor:pointer" onclick="openOrder('${o.id}')"><span class="l">${o.id} · ${o.garment}</span><span class="pill ${statusPill(o.status)}" style="font-size:11px"><span></span>${o.status}</span></div>`).join('')}</div>
+    <div class="sect"><h4>Measurements</h4><div style="display:grid;grid-template-columns:1fr 1fr;gap:0 18px">${meas}</div></div>
+    <div class="sect"><h4>Support notes</h4><div style="font-size:14px;color:var(--ink2);background:var(--card);border-radius:12px;padding:12px 14px;box-shadow:var(--sh)">${esc(c.notes)}</div><div class="tiny muted" style="margin-top:8px">Internal only — never shown on the public tracking page.</div></div>`);
+}
+
+/* =============== TRACKING =============== */
+let trkQ='';
+VIEWS.tracking=()=>`
+  <div class="toolbar"><div class="srch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg><input class="fld" id="tq" placeholder="Search tracking ref or order…" value="${esc(trkQ)}" style="width:280px;padding-left:32px"></div>
+    <span class="chipf"><svg width="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Simulated links</span>
+    <span class="muted tiny" id="tcount" style="margin-left:auto"></span></div>
+  <div class="card" style="overflow:hidden"><table class="tbl"><thead><tr><th class="no">Tracking ref</th><th class="no">Order</th><th class="no">Client</th><th class="no">Current stage</th><th class="no">Last updated</th><th class="no">Expected</th><th class="no" style="text-align:right">Public page</th></tr></thead><tbody id="trows"></tbody></table><div id="tempty"></div></div>`;
+AFTER.tracking=()=>{$('#tq').oninput=()=>{trkQ=$('#tq').value;renderTrk()};renderTrk()};
+function renderTrk(){
+  let l=ORDERS.slice();const q=trkQ.toLowerCase().trim();
+  if(q)l=l.filter(o=>(o.track+o.id+o.customer).toLowerCase().includes(q));
+  l=l.slice(0,100);
+  $('#tcount').textContent=l.length+' tracking records';
+  $('#trows').innerHTML=l.map(o=>`<tr onclick="openTracking('${o.id}')">
+    <td><b>${o.track}</b></td><td class="num">${o.id}</td><td class="num">${o.customer}</td>
+    <td class="num">${stageName(o.stage)}</td><td class="num">${fmtDS(o.lastUpdated)}</td><td class="num">${fmtDS(o.dueDate)}</td>
+    <td style="text-align:right"><span class="btn sm tint">Open</span></td></tr>`).join('');
+  $('#tempty').innerHTML=l.length?'':'<div class="empty">No tracking records match.</div>';
+}
+function openTracking(id){
+  const o=orderById(id);
+  const steps=STAGES.map((s,i)=>{const cls=i<o.si?'done':i===o.si?'cur':'pend';
+    return `<li class="${cls}"><div style="font-weight:600;font-size:14px;${i===o.si?'color:var(--blue)':''}">${s.name}</div><div class="tiny muted">${i<o.si?'Completed':i===o.si?'In progress':'Upcoming'}</div></li>`}).join('');
+  drawer('Customer tracking page',`
+    <div class="pub">
+      <div style="text-align:center;padding:4px 0 18px">
+        <div class="mk" style="position:static;width:40px;height:40px;border-radius:10px;background:var(--ink);color:#fff;display:inline-grid;place-items:center;font-weight:700">${SETTINGS.brand.initials}</div>
+        <div style="font-weight:700;font-size:18px;margin-top:8px">${SETTINGS.brand.name}</div>
+        <div class="tiny muted">Order tracking</div>
+      </div>
+      <div class="card" style="padding:18px;margin-bottom:14px">
+        <div class="tiny muted">Tracking reference</div><div style="font-weight:700;font-size:17px">${o.track}</div>
+        <div style="margin-top:10px"><span class="pill ${statusPill(o.status==='Delayed'?'In production':o.status)}"><span></span>${o.status==='Delayed'?'In production':o.status}</span></div>
+      </div>
+      <div class="card" style="padding:18px;margin-bottom:14px">
+        <div style="font-weight:700;margin-bottom:12px">Production progress</div>
+        <ul class="tl">${steps}</ul>
+      </div>
+      <div class="card" style="padding:18px;display:flex;align-items:center;gap:14px;margin-bottom:14px">
+        <div style="flex:1"><div class="tiny muted">Estimated delivery</div><div style="font-size:20px;font-weight:700">${fmtD(o.dueDate)}</div></div>
+        <div style="text-align:right"><div class="tiny muted">Last updated</div><div style="font-weight:600">${fmtDS(o.lastUpdated)}</div></div>
+      </div>
+      <a class="btn pri" style="width:100%;justify-content:center" href="#" onclick="event.preventDefault();toast('Opens a support chat (simulated)')">Contact ${SETTINGS.brand.name} support</a>
+      <div class="tiny muted" style="text-align:center;margin-top:12px">Public view · no internal notes or private details shown · demo</div>
+    </div>`);
+}
+
+/* =============== REPORTS =============== */
+VIEWS.reports=()=>{
+  const byStage=STAGES.map(s=>({l:s.name,v:s.count}));
+  const byCountry=COUNTRIES.map(c=>({l:c.name,v:c.count}));
+  const avg=STAGES.map(s=>({l:s.name,v:s.avg,t:s.target}));
+  return `
+  <div class="toolbar"><div><h2 style="font-size:20px">Reports</h2><div class="muted tiny" style="margin-top:2px">Reporting period: 1 Aug 2026 – 24 Oct 2026 · sample data, not real performance</div></div></div>
+  <div class="grid" style="grid-template-columns:1fr 1fr">
+    <div class="card"><div class="hd"><h3>Orders by production stage</h3></div><div class="chartwrap">${vbars(byStage,'var(--blue)')}</div></div>
+    <div class="card"><div class="hd"><h3>On-time vs delayed</h3><span class="muted tiny">last 90 days</span></div><div class="chartwrap" style="display:flex;align-items:center;gap:18px;justify-content:center">${donut([['On time',92,'#34c759'],['Delayed',8,'#ff3b30']])}</div></div>
+    <div class="card"><div class="hd"><h3>Average duration per stage</h3><span class="muted tiny">days · target vs actual</span></div><div class="chartwrap">${avgChart(avg)}</div></div>
+    <div class="card"><div class="hd"><h3>Orders by destination</h3></div><div class="chartwrap">${hbars(byCountry.map(r=>({l:r.l,v:r.v,d:0})))}</div></div>
+  </div>
+  <div class="tiny muted" style="margin-top:12px">All figures are illustrative demo data for demonstration only and do not represent real business performance.</div>`;
+};
+function vbars(rows,color){const max=Math.max(...rows.map(r=>r.v));
+  return `<svg viewBox="0 0 560 220" style="width:100%;height:auto">${rows.map((r,i)=>{const bw=560/rows.length,h=r.v/max*160,x=i*bw+bw*0.2,w=bw*0.6;
+    return `<rect x="${x}" y="${180-h}" width="${w}" height="${h}" rx="5" fill="${color}"/><text x="${x+w/2}" y="${178-h-4}" font-size="11" font-weight="600" fill="#1c1c1e" text-anchor="middle">${r.v}</text><text x="${x+w/2}" y="198" font-size="9" fill="#8e8e93" text-anchor="middle">${r.l.split(' ')[0]}</text>`}).join('')}<line x1="0" y1="180" x2="560" y2="180" stroke="#e3e3e8"/></svg>`;
+}
+function avgChart(rows){const max=Math.max(...rows.map(r=>Math.max(r.v,r.t)));
+  return rows.map(r=>`<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+    <div style="width:140px;font-size:13px;color:var(--ink2)">${r.l}</div>
+    <div style="flex:1;position:relative;height:22px;background:#eef0f3;border-radius:7px">
+      <i style="position:absolute;left:0;top:0;height:100%;width:${r.v/max*100}%;border-radius:7px;background:${r.v>r.t?'var(--orange)':'var(--blue)'}"></i>
+      <span style="position:absolute;left:${r.t/max*100}%;top:-3px;bottom:-3px;width:2px;background:var(--ink)"></span></div>
+    <div style="width:92px;text-align:right;font-size:13px"><b>${r.v}d</b> <span class="muted">/ ${r.t}d</span></div></div>`).join('')
+    +`<div class="legend" style="margin-top:6px"><span><i style="background:var(--blue)"></i>Actual avg</span><span><i style="background:var(--ink);width:3px;border-radius:0"></i>Target</span></div>`;
+}
+function donut(data){const tot=data.reduce((a,b)=>a+b[1],0);let off=0;const R=54,C=2*Math.PI*R;
+  const segs=data.map(d=>{const len=d[1]/tot*C;const s=`<circle cx="75" cy="75" r="${R}" fill="none" stroke="${d[2]}" stroke-width="20" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 75 75)"/>`;off+=len;return s}).join('');
+  return `<svg viewBox="0 0 150 150" style="width:150px;height:150px">${segs}<text x="75" y="72" text-anchor="middle" font-size="22" font-weight="700" fill="#1c1c1e">92%</text><text x="75" y="90" text-anchor="middle" font-size="10" fill="#8e8e93">on time</text></svg>
+    <div class="legend" style="flex-direction:column;gap:8px">${data.map(d=>`<span><i style="background:${d[2]}"></i>${d[0]} · ${d[1]}%</span>`).join('')}</div>`;
+}
+
+/* =============== SETTINGS =============== */
+VIEWS.settings=()=>`
+  <div class="grid" style="grid-template-columns:1fr 1fr">
+    <div class="card"><div class="hd"><h3>Brand identity</h3></div><div style="padding:4px 20px 18px">
+      <div class="set-row"><div><div style="font-weight:500">Brand name</div><div class="tiny muted">Shown across app & tracking page</div></div><input class="fld" id="sName" value="${SETTINGS.brand.name}" style="width:160px"></div>
+      <div class="set-row"><div><div style="font-weight:500">Logo initials</div></div><input class="fld" id="sInit" value="${SETTINGS.brand.initials}" maxlength="2" style="width:70px"></div>
+      <div class="set-row"><div><div style="font-weight:500">Accent color</div></div><div style="display:flex;gap:8px;align-items:center"><span style="width:24px;height:24px;border-radius:7px;background:${SETTINGS.brand.accent};border:1px solid rgba(0,0,0,.1)"></span><input class="fld" id="sAccent" value="${SETTINGS.brand.accent}" style="width:110px"></div></div>
+      <div class="set-row"><div><div style="font-weight:500">Currency</div></div><select class="fld" id="sCur"><option>USD</option><option>GBP</option><option>AED</option><option>PKR</option></select></div>
+      <button class="btn pri" style="width:100%;margin-top:14px;justify-content:center" onclick="saveBrand()">Apply branding</button>
+    </div></div>
+
+    <div class="card"><div class="hd"><h3>Production stage targets</h3><span class="muted tiny">days</span></div><div style="padding:4px 20px 18px">
+      ${STAGES.map((s,i)=>`<div class="set-row"><div><div style="font-weight:500">${s.name}</div><div class="tiny muted">${s.team} · avg ${s.avg}d</div></div><input class="fld stgt" data-i="${i}" type="text" value="${s.target}" style="width:64px;text-align:center"></div>`).join('')}
+      <button class="btn pri" style="width:100%;margin-top:14px;justify-content:center" onclick="saveTargets()">Save targets</button>
+    </div></div>
+
+    <div class="card"><div class="hd"><h3>Production teams</h3></div><div style="padding:4px 20px 18px">
+      ${TEAMS.map(t=>`<div class="set-row"><div><div style="font-weight:500">${t.name}</div><div class="tiny muted">${t.focus}</div></div><span class="pill gray"><span></span>${t.members} people</span></div>`).join('')}
+    </div></div>
+
+    <div class="card"><div class="hd"><h3>User roles</h3></div><div style="padding:4px 20px 18px">
+      ${SETTINGS.roles.map(r=>`<div class="set-row"><div style="font-weight:500">${r}</div><span class="muted tiny">${r==='Admin'?'Full access':r==='Viewer'?'Read only':'Scoped access'}</span></div>`).join('')}
+    </div></div>
+
+    <div class="card"><div class="hd"><h3>Notifications</h3></div><div style="padding:4px 20px 18px" id="notif">
+      ${Object.entries(SETTINGS.notify).map(([k,v])=>`<div class="set-row"><div style="font-weight:500">${({delays:'Delay alerts',newOrders:'New order alerts',dailyDigest:'Daily digest email',trackingViews:'Tracking page views'})[k]}</div><button class="toggle ${v?'on':''}" data-k="${k}"></button></div>`).join('')}
+    </div></div>
+
+    <div class="card"><div class="hd"><h3>Tracking page</h3></div><div style="padding:4px 20px 18px" id="trkset">
+      <div class="set-row"><div><div style="font-weight:500">Public tracking page</div><div class="tiny muted">Customer-facing, no private data</div></div><button class="toggle ${SETTINGS.tracking.publicPage?'on':''}" data-k="publicPage"></button></div>
+      <div class="set-row"><div style="font-weight:500">Show delivery estimate</div><button class="toggle ${SETTINGS.tracking.showEstimate?'on':''}" data-k="showEstimate"></button></div>
+      <div class="set-row"><div style="font-weight:500">Show stage history</div><button class="toggle ${SETTINGS.tracking.showStageHistory?'on':''}" data-k="showStageHistory"></button></div>
+      <div class="set-row"><div><div style="font-weight:500">Support contact</div></div><input class="fld" id="sSupport" value="${SETTINGS.tracking.support}" style="width:200px"></div>
+    </div></div>
+  </div>
+  <div class="card" style="margin-top:16px;padding:16px 20px;background:var(--blue-s)">
+    <div style="display:flex;gap:12px;align-items:flex-start"><svg width="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue-d)" stroke-width="2" style="flex:none;margin-top:1px"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <div><div style="font-weight:600;color:var(--blue-d);font-size:14px">Demo environment</div><p class="tiny" style="color:var(--ink2);margin:5px 0 0;line-height:1.5">All data is realistic sample data. WhatsApp, email, payment and tracking integrations are <b>simulated</b>. An optional AI assistant can be added as a future enhancement — it is intentionally not a primary module in this demo.</p></div></div>
+  </div>`;
+AFTER.settings=()=>{
+  $('#notif').querySelectorAll('.toggle').forEach(t=>t.onclick=()=>{SETTINGS.notify[t.dataset.k]=!SETTINGS.notify[t.dataset.k];t.classList.toggle('on');toast('Preference updated')});
+  $('#trkset').querySelectorAll('.toggle').forEach(t=>t.onclick=()=>{SETTINGS.tracking[t.dataset.k]=!SETTINGS.tracking[t.dataset.k];t.classList.toggle('on');toast('Tracking setting updated')});
+};
+function saveBrand(){SETTINGS.brand.name=$('#sName').value||'Atelier';SETTINGS.brand.initials=($('#sInit').value||'A').toUpperCase();SETTINGS.brand.accent=$('#sAccent').value||'#007aff';
+  $('#brandNm').textContent=SETTINGS.brand.name;$('#brandMk').textContent=SETTINGS.brand.initials;
+  document.documentElement.style.setProperty('--blue',SETTINGS.brand.accent);toast('Branding applied across the app')}
+function saveTargets(){document.querySelectorAll('.stgt').forEach(inp=>{const v=parseFloat(inp.value);if(!isNaN(v))STAGES[+inp.dataset.i].target=v});toast('Stage duration targets saved')}
+
+/* ---- drawer ---- */
+function drawer(title,html){$('#dwTitle').textContent=title;$('#dwBody').innerHTML=html;$('#dw').classList.add('on');$('#ov').classList.add('on')}
+function closeDrawer(){$('#dw').classList.remove('on');$('#ov').classList.remove('on')}
+$('#dwClose').onclick=closeDrawer;$('#ov').onclick=closeDrawer;
+
+/* ---- global search ---- */
+$('#gsearch').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const q=e.target.value.trim();if(!q)return;
+  const o=ORDERS.find(x=>(x.id+x.customer+x.garment).toLowerCase().includes(q.toLowerCase()));
+  if(o){openOrder(o.id)}else{oState.q=q;go('orders')}e.target.value=''});
+
+/* init */
+renderNav();go('overview');
+</script>
+</body>
+</html>
