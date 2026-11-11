@@ -1,0 +1,88 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;width:430px;height:932px;overflow:hidden;font-family:Figtree,sans-serif;color:#111}
+.app{position:absolute;inset:0;background:#EFE7DE}
+.wall{position:absolute;inset:0;opacity:.07;background-image:radial-gradient(circle at 20px 20px,#5b4636 2px,transparent 2.5px),radial-gradient(circle at 60px 50px,#5b4636 1.5px,transparent 2px);background-size:80px 80px}
+.head{position:absolute;left:0;right:0;top:0;height:118px;background:#F6F5F3;border-bottom:1px solid #ddd;display:flex;align-items:flex-end;padding:0 14px 12px;gap:10px;z-index:3}
+.back{font-size:30px;color:#0A84FF;line-height:1;margin-bottom:8px}
+.gav{width:42px;height:42px;border-radius:21px;overflow:hidden;background:#ddd;flex:none}
+.gav img{width:100%;height:100%}
+.tt{display:flex;flex-direction:column;flex:1;min-width:0}
+.tt b{font-size:17px;font-weight:700}
+.tt span{font-size:13px;color:#6b6b6b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt span.typing{color:#1FA855}
+.icons{display:flex;gap:18px;margin-bottom:10px;color:#0A84FF}
+.feed{position:absolute;left:0;right:0;top:118px;bottom:84px;overflow:hidden}
+.stack{position:absolute;left:0;right:0;bottom:6px;padding:0 10px;display:flex;flex-direction:column;gap:5px;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.m{max-width:78%;padding:7px 10px 6px;border-radius:14px;font-size:15.5px;line-height:1.3;box-shadow:0 1px 1px rgba(0,0,0,.08);animation:pop .28s cubic-bezier(.2,.8,.2,1) both;position:relative}
+.in{align-self:flex-start;background:#fff;border-top-left-radius:4px}
+.out{align-self:flex-end;background:#D9FDD3;border-top-right-radius:4px}
+.who{font-size:13px;font-weight:700;margin-bottom:2px;display:flex;align-items:center;gap:6px}
+.who img{width:18px;height:18px;border-radius:9px}
+.meta{font-size:11px;color:#8a8a8a;float:right;margin:6px 0 -2px 10px}
+.ticks{color:#53BDEB;font-weight:700;letter-spacing:-3px;margin-left:3px}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+.bar{position:absolute;left:0;right:0;bottom:0;height:84px;background:#F6F5F3;border-top:1px solid #ddd;display:flex;align-items:flex-start;padding:10px 12px;gap:10px;z-index:3}
+.inp{flex:1;height:38px;border-radius:19px;background:#fff;border:1px solid #ddd;display:flex;align-items:center;padding:0 14px;font-size:15px;color:#9a9a9a}
+.badge{position:absolute;right:14px;bottom:96px;z-index:4;height:30px;min-width:30px;padding:0 10px;border-radius:15px;background:#1FA855;color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.2);opacity:0;transition:opacity .2s}
+/* chat list */
+.list{position:absolute;inset:0;background:#fff}
+.lh{padding:62px 16px 8px;font-size:32px;font-weight:700}
+.search{margin:0 16px 8px;height:36px;border-radius:10px;background:#EFEFF0;color:#8a8a8a;display:flex;align-items:center;padding:0 12px;font-size:15px}
+.row{display:flex;gap:12px;align-items:center;padding:10px 16px;border-bottom:1px solid #f0f0f0;transition:background .3s}
+.row .av{width:54px;height:54px;border-radius:27px;overflow:hidden;flex:none;background:#eee}
+.row .av img{width:100%;height:100%}
+.row .c{flex:1;min-width:0}
+.row .n{display:flex;justify-content:space-between;font-size:16.5px;font-weight:700}
+.row .n span{font-size:13px;font-weight:500;color:#1FA855}
+.row .p{display:flex;justify-content:space-between;align-items:center;margin-top:3px;font-size:14.5px;color:#6b6b6b}
+.row .p em{font-style:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
+.u{min-width:24px;height:24px;padding:0 7px;border-radius:12px;background:#1FA855;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.u.bump{animation:bump .3s ease}
+@keyframes bump{40%{transform:scale(1.35)}}
+.flash{background:#F2FBF4}
+</style></head>
+<body><div id="root"></div>
+<script>
+const B='_blob/', A={you:B+'7b0b69f89f9c2fc58d244b671b1bd86f.svg',omar:B+'f5959d5a085b747098f4cb4455f8790c.svg',sara:B+'45e119960702bea5af0253fd787246b4.svg',ali:B+'d29f29a8890c3d2004bd9c563b2a315f.svg',fatima:B+'cb0d57136d98f0d002ce32d0b1b464d2.svg',yusuf:B+'37faa50767d8d54742098ffbcad13b60.svg',layla:B+'446324382d1ce7650d652d0e72f757fe.svg',rami:B+'f1aa7683084e0c3ed8f44280b4144633.svg',noor:B+'c4e29de22876273493fcf2e39306ec68.svg',zaid:B+'734b89a5b0fb33eeb13bd05c990ab77c.svg'};
+const NAMES={omar:['Omar','#C83F00'],sara:['Sara','#7A3EB1'],ali:['Ali','#1F7A4D'],fatima:['Fatima','#B1366B'],yusuf:['Yusuf','#1F5AA6'],layla:['Layla','#8A5A00'],rami:['Rami','#555'],noor:['Noor','#0E7C86'],zaid:['Zaid','#9C3D10']};
+const mode=new URLSearchParams(location.search).get('m')||'group';
+const root=document.getElementById('root');
+const T=(ms,fn)=>setTimeout(fn,ms);
+if(mode==='list'){
+  const rows=[['JJ dinner squad',A.omar,'Sara: sent 30, check?',3,'group'],['Omar Khalid',A.omar,'how much was mine again?',1],['Sara Ahmed',A.sara,'did you get my 30?',2],['Office lunch Thursday',A.zaid,'Zaid: who paid for the pizza',5,'group'],['Ali Mansoor',A.ali,'I’ll send it Friday',1],['Layla',A.layla,'what do I owe for brunch?',0],['Fatima Noor',A.fatima,'was I even in that order?',1],['Beach day group',A.noor,'Noor: split the shawarma?',0]];
+  root.innerHTML='<div class="list"><div class="lh">Chats</div><div class="search">Search</div>'+rows.map((r,i)=>`<div class="row" id="r${i}"><div class="av"><img src="${r[1]}"></div><div class="c"><div class="n">${r[0]}<span id="t${i}">${r[3]?'now':'9:12'}</span></div><div class="p"><em id="p${i}">${r[2]}</em>${r[3]?`<b class="u" id="u${i}">${r[3]}</b>`:`<b class="u" id="u${i}" style="opacity:0">0</b>`}</div></div></div>`).join('')+'</div>';
+  const cnt=rows.map(r=>r[3]);
+  const msgs=['Omar: what about delivery?','Sara: ??','Ali: Friday ok?','Fatima: not me','Omar: send the receipt','Zaid: I paid last time','Layla: how much??','Noor: who’s collecting?','Sara: Hamza??','Omar: is it 35 or 40'];
+  let t=200,k=0;
+  for(let n=0;n<46;n++){const i=[0,1,2,0,3,4,0,5,6,0,7,2,0,1][n%14];t+=Math.max(70,330-n*7);
+    T(t,()=>{cnt[i]+=1+(n>20?Math.floor(n/12):0);const u=document.getElementById('u'+i);u.style.opacity=1;u.textContent=cnt[i]>99?'99+':cnt[i];u.classList.remove('bump');void u.offsetWidth;u.classList.add('bump');
+      document.getElementById('t'+i).textContent='now';const r=document.getElementById('r'+i);r.classList.add('flash');T(220,()=>r.classList.remove('flash'));
+      if(n%2===0){document.getElementById('p'+i).textContent=msgs[(k++)%msgs.length];}});}
+} else {
+  const office=mode==='office';
+  const title=office?'Office lunch Thursday':'JJ dinner squad', av=office?A.zaid:A.omar;
+  const members=office?'Zaid, Layla, Rami, Noor, You':'Omar, Sara, Ali, Fatima, You';
+  root.innerHTML=`<div class="app"><div class="wall"></div><div class="head"><span class="back">‹</span><div class="gav"><img src="${av}"></div><div class="tt"><b>${title}</b><span id="sub">${members}</span></div><div class="icons"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0A84FF" stroke-width="2"><rect x="2" y="6" width="14" height="12" rx="3"/><path d="M16 10l6-3v10l-6-3"/></svg><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0A84FF" stroke-width="2"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg></div></div><div class="feed"><div class="stack" id="st"></div></div><div class="badge" id="bd">0</div><div class="bar"><span style="font-size:26px;color:#0A84FF;line-height:36px">+</span><div class="inp" id="inp">Message</div></div></div>`;
+  const script=office?[
+   ['zaid','Pizza was 210 total, who paid?'],['layla','not me'],['rami','I sent 40 to someone'],['noor','to who??'],['zaid','I paid the tip too'],['you','I think I owe 35?'],['layla','was the drinks split?'],['rami','I didn’t have drinks'],['noor','can someone do the maths'],['zaid','Rami you still owe from Monday'],['rami','that was cancelled'],['layla','??'],['noor','screenshot the receipt pls'],['zaid','lost it'],['rami','ok who’s collecting'],['layla','not me']
+  ]:[
+   ['you','Paid AED 125 for JJ. Send me your share'],['omar','how much is mine?'],['sara','I only had the wrap'],['ali','were the fries shared?'],['omar','what about the discount'],['fatima','I wasn’t even there??'],['sara','sent 30, check'],['you','Sara it was 26.95…'],['ali','I’ll pay you Friday'],['omar','who paid delivery?'],['sara','?'],['fatima','still not sure what I owe'],['omar','send the receipt'],['ali','Friday ok?'],['you','Can everyone just tell me what you had'],['sara','Hamza??'],['omar','is it 35 or 40'],['ali','I sent 30 to Omar by mistake'],['fatima','lol'],['omar','wait what']
+  ];
+  const st=document.getElementById('st'),sub=document.getElementById('sub'),bd=document.getElementById('bd');
+  let t=250,unread=0;
+  script.forEach(([w,txt],n)=>{
+    const gap=Math.max(110,520-n*26);t+=gap;
+    if(w!=='you') T(t-Math.min(220,gap*0.6),()=>{sub.textContent=NAMES[w][0]+' is typing…';sub.className='typing';});
+    T(t,()=>{
+      const el=document.createElement('div');
+      if(w==='you'){el.className='m out';el.innerHTML=`${txt}<span class="meta">9:${14+n} <span class="ticks">✓✓</span></span>`;}
+      else{const [nm,c]=NAMES[w];el.className='m in';el.innerHTML=`<div class="who" style="color:${c}"><img src="${A[w]}">${nm}</div>${txt}<span class="meta">9:${14+n}</span>`;unread++;}
+      st.appendChild(el);sub.textContent=members;sub.className='';
+      if(n>8){bd.style.opacity=1;bd.textContent='↓ '+(unread*3);}
+    });
+  });
+}
+</script></body></html>
