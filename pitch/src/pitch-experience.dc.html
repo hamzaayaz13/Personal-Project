@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Split the bill · pitch</title>
+<script src="./support.js"></script>
+<script src="/_blob/78d4c892331ed8857042411e2a19ac4f"></script>
+<script src="/_blob/1fbce65f713f3095234816258fede6f2"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#1a1a1a}
+a{color:#f2f2f2}a:hover{color:#ffffff}
+
+/* lines above the orb: letters arrive from a blur, one after another */
+.ln{position:absolute;left:0;right:0;top:0;display:flex;flex-wrap:wrap;justify-content:center;column-gap:.28em;transition:opacity .45s ease,filter .45s ease,transform .45s ease}
+.ln.off{opacity:0;filter:blur(10px);transform:translateY(-8px)}
+.ln .w{display:inline-flex;white-space:nowrap}
+.ln .c{opacity:0;filter:blur(10px)}
+.ln.on .c{animation:chIn .55s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes chIn{to{opacity:1;filter:blur(0)}}
+
+/* the orb */
+.orb{transition:opacity .9s ease,transform 1.1s cubic-bezier(.6,-.3,.4,1.4),filter .9s ease}
+.orb.away{opacity:0;transform:scale(.55);filter:blur(6px)}
+
+/* start */
+.go{font:inherit;font-size:15px;letter-spacing:.02em;color:#cfcfcf;background:transparent;border:1px solid #3a3a3a;border-radius:999px;padding:12px 26px;min-height:44px;cursor:pointer;transition:opacity .4s ease,border-color .2s ease,color .2s ease}
+.go:hover{border-color:#8a6cff;color:#ffffff}
+.go.hide{opacity:0;pointer-events:none}
+
+/* the distortion wave (Libraries.dev's DistortionWavesKit, center type, ported to WebGL) */
+.wave{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0}
+.wave.on{opacity:1}
+
+/* the film */
+.film{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#0e0b12;opacity:0;pointer-events:none}
+.film.on{opacity:1;pointer-events:auto}
+.film video{width:100%;height:100%;object-fit:contain;background:#0e0b12}
+@media (prefers-reduced-motion: reduce){.ln.on .c{animation-duration:.01s}.orb{transition:none}}
+</style>
+</helmet>
+<div style="position: relative; width: 100%; height: 100vh; min-height: 520px; overflow: hidden; background: #1a1a1a; font-family: 'Figtree', system-ui, sans-serif; color: #f2f2f2">
+
+<div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 36px; padding: 16px; box-sizing: border-box">
+<div aria-live="polite" style="position: relative; width: 100%; max-width: 980px; height: 2.6em; font-size: clamp(24px, 3.6vw, 46px); font-weight: 300; letter-spacing: -0.02em; line-height: 1.2; text-align: center">
+<sc-for list="{{ lines }}" as="l" hint-placeholder-count="3">
+<div class="{{ l.cls }}">
+<sc-for list="{{ l.words }}" as="w" hint-placeholder-count="4">
+<span class="w"><sc-for list="{{ w.chars }}" as="c" hint-placeholder-count="5"><span class="c" style="{{ c.st }}">{{ c.ch }}</span></sc-for></span>
+</sc-for>
+</div>
+</sc-for>
+</div>
+<div class="{{ orbCls }}" ref="{{ orbRef }}" style="display: flex; align-items: center; justify-content: center; min-width: 200px; min-height: 200px"></div>
+<button class="{{ goCls }}" onClick="{{ start }}">Click to begin</button>
+</div>
+
+
+<div class="{{ filmCls }}">
+<video ref="{{ videoRef }}" src="/_blob/b35f37306c02784d45e09c94589d5d0c" controls="{{ controls }}" playsinline="{{ true }}" preload="auto"></video>
+</div>
+<canvas class="{{ waveCls }}" ref="{{ waveRef }}" aria-hidden="true"></canvas>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { stage: 'ready', line: -1 };
+this.timers = [];
+/* The voiceover's lines and when each one starts (seconds). Placeholders until the voiceover arrives. */
+this.script = [
+{ t: 0.4, text: '[Line 1 of your voiceover]' },
+{ t: 3.6, text: '[Line 2 of your voiceover]' },
+{ t: 6.8, text: '[Line 3 of your voiceover]' }
+];
+this.voEnd = 10.2;
+this.orbRef = (el) => {
+if (el) this.orbEl = el;
+if (el && !this.orb && window.TalkingOrb) {
+const size = Math.min(320, Math.round(Math.min(window.innerWidth, window.innerHeight) * 0.42));
+this.orb = window.TalkingOrb.mount(el, { size: size, state: 'idle' });
+this.orb.setState('idle');
+}
+};
+this.videoRef = (el) => { this.video = el; };
+this.waveRef = (el) => { this.waveEl = el; };
+this.orbBox = () => { const o = this.orbEl && this.orbEl.getBoundingClientRect(); return o; };
+this.start = () => this.begin();
+}
+componentWillUnmount() { this.timers.forEach((t) => clearTimeout(t)); if (this.wave) this.wave.stop(); }
+later(ms, fn) { this.timers.push(setTimeout(fn, ms)); }
+begin() {
+if (this.state.stage !== 'ready') return;
+this.setState({ stage: 'talk' });
+if (this.orb) this.orb.setState('speaking');
+this.script.forEach((s, i) => this.later(s.t * 1000, () => this.setState({ line: i })));
+this.later(this.voEnd * 1000, () => {
+if (this.orb) this.orb.setState('idle');
+this.setState({ stage: 'morph', line: -1 });
+const box = this.orbBox(), root = this.waveEl && this.waveEl.getBoundingClientRect();
+const cx = () => { const b = this.orbBox(), r = this.waveEl.getBoundingClientRect(); return b ? b.left + b.width / 2 - r.left : r.width / 2; };
+const cy = () => { const b = this.orbBox(), r = this.waveEl.getBoundingClientRect(); return b ? b.top + b.height / 2 - r.top : r.height / 2; };
+const r0 = box ? Math.max(60, Math.min(box.width, box.height) * 0.42) : 130;
+const finish = () => { this.setState({ stage: 'film' }); };
+if (!window.DistortionWave || !this.waveEl) { this.later(400, finish); return; }
+this.wave = window.DistortionWave.run(this.waveEl, this.video, {
+cx: cx, cy: cy, r: r0,
+onLaunch: () => {
+if (this.video) { this.video.currentTime = 0; const p = this.video.play(); if (p && p.catch) p.catch(() => {}); }
+this.later(900, () => this.setState({ orbGone: true }));
+},
+onDone: finish
+});
+});
+}
+renderVals() {
+const st = this.state.stage, cur = this.state.line;
+const lines = this.script.map((s, i) => {
+let k = 0;
+return {
+cls: 'ln ' + (i === cur ? 'on' : (i < cur ? 'on off' : '')),
+words: s.text.split(' ').map((w) => ({ chars: w.split('').map((ch) => ({ ch: ch, st: 'animation-delay:' + (k++ * 28) + 'ms' })) }))
+};
+});
+return {
+lines: lines,
+orbRef: this.orbRef, videoRef: this.videoRef, waveRef: this.waveRef, start: this.start,
+orbCls: 'orb' + (this.state.orbGone || st === 'film' ? ' away' : ''),
+waveCls: 'wave' + (st === 'morph' ? ' on' : ''),
+goCls: 'go' + (st === 'ready' ? '' : ' hide'),
+filmCls: 'film' + (st === 'film' ? ' on' : ''),
+controls: st === 'film'
+};
+}
+}
+</script>
+</body>
+</html>
