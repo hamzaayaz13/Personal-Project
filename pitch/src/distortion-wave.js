@@ -141,8 +141,9 @@ void main(){
     const s = Math.cbrt(0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb);
     return [0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s, 1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s, 0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s];
   }
-  // the colourful palette (VoiceGlow's), then the pink fringe ahead and the blue one behind
-  const PAL = [[255, 201, 21], [126, 196, 255], [180, 40, 230], [235, 100, 160], [255, 176, 122], [154, 160, 255], [127, 217, 238], [255, 122, 182], [90, 190, 255]].map((c) => oklab(c[0], c[1], c[2]));
+  // talabat's tones: oranges, peach and warm yellow; a light peach fringe ahead, a deep orange-red one behind
+  const TALABAT = [[255, 90, 0], [255, 160, 100], [255, 201, 60], [214, 69, 0], [255, 190, 150], [240, 110, 40], [255, 140, 60], [255, 222, 196], [200, 55, 15]];
+  const PAL_COLORFUL = [[255, 201, 21], [126, 196, 255], [180, 40, 230], [235, 100, 160], [255, 176, 122], [154, 160, 255], [127, 217, 238], [255, 122, 182], [90, 190, 255]].map((c) => c);
 
   // full-screen tuning (the kit's base lengths; the center type's timing)
   const S = { anticipation: 0.25, travel: 3.43, linger: -0.35, rimFade: 2.51, hairlineLinger: 0.96, hairlineFade: 3.0,
@@ -165,6 +166,7 @@ void main(){
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([14, 11, 18, 255]));
+    const PAL = (opts.palette || TALABAT).map((c) => oklab(c[0], c[1], c[2]));
     gl.uniform3fv(U('uPal'), new Float32Array(PAL.flat()));
     const bg = opts.bg || [14 / 255, 11 / 255, 18 / 255];
     gl.uniform3f(U('uBg'), bg[0], bg[1], bg[2]);
